@@ -183,7 +183,6 @@
   import fs from 'fs'
   import path from 'path'
   import mime from 'mime'
-  import Hello from './components/Hello'
   import Device from './core/device'
   import VFS from './core/vfs'
   import FILE_TYPE from './core/const/file_type'
@@ -429,9 +428,13 @@
         this.mode = 'rename'
       },
       rename_file () {
-        vfs.rename_file(this.file_name_rename, this.file_inode, this.inode_index)
-        this.close_rename()
-        this.refresh()
+        try {
+          vfs.rename_file(this.file_name_rename, this.file_inode, this.inode_index)
+          this.close_rename()
+          this.refresh()
+        } catch (e) {
+          dialog.showMessageBox({buttons: ['好的'], message: e.toString()})
+        }
       },
       close_rename () {
         this.file_inode = 0
@@ -451,9 +454,6 @@
       is_up_dir (item) {
         return item.file_type === FILE_TYPE.EXT2_FT_DIR && item.name === '..'
       }
-    },
-    components: {
-      Hello
     }
   }
 </script>

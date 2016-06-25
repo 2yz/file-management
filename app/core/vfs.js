@@ -92,6 +92,7 @@ export default class VFS {
   }
 
   rename_file (name, inode_index, parent_inode_index) {
+    this.check_same_name(name, parent_inode_index)
     var parent = JSON.parse(this.read_file(parent_inode_index).toString())
     for (var i = 0; i < parent.length; ++i) {
       if (parent[i].inode === inode_index) {
