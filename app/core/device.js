@@ -1,5 +1,7 @@
 import fs from 'fs'
 import path from 'path'
+const {app} = require('electron').remote
+var userData = app.getPath('userData')
 
 export default class Device {
   constructor (name, super_block, inode_table, data_bitmap_buffer, data_block_buffer) {
@@ -12,15 +14,15 @@ export default class Device {
   }
   write () {
     try {
-      fs.accessSync(this.name)
+      fs.accessSync(path.join(userData, this.name))
     } catch (e) {
-      fs.mkdirSync(this.name)
+      fs.mkdirSync(path.join(userData, this.name))
     }
     try {
-      fs.writeFileSync(path.join(this.name, 'super_block'), JSON.stringify(this.super_block))
-      fs.writeFileSync(path.join(this.name, 'inode_table'), JSON.stringify(this.inode_table))
-      fs.writeFileSync(path.join(this.name, 'data_bitmap_buffer'), this.data_bitmap_buffer)
-      fs.writeFileSync(path.join(this.name, 'data_block_buffer'), this.data_block_buffer)
+      fs.writeFileSync(path.join(userData, this.name, 'super_block'), JSON.stringify(this.super_block))
+      fs.writeFileSync(path.join(userData, this.name, 'inode_table'), JSON.stringify(this.inode_table))
+      fs.writeFileSync(path.join(userData, this.name, 'data_bitmap_buffer'), this.data_bitmap_buffer)
+      fs.writeFileSync(path.join(userData, this.name, 'data_block_buffer'), this.data_block_buffer)
       return true
     } catch (e) {
       console.error(e)
@@ -29,10 +31,10 @@ export default class Device {
   }
   static read (name) {
     fs.accessSync(name)
-    var super_block = JSON.parse(fs.readFileSync(path.join(name, 'super_block')).toString())
-    var inode_table = JSON.parse(fs.readFileSync(path.join(name, 'inode_table')).toString())
-    var data_bitmap_buffer = fs.readFileSync(path.join(name, 'data_bitmap_buffer'))
-    var data_block_buffer = fs.readFileSync(path.join(name, 'data_block_buffer'))
+    var super_block = JSON.parse(fs.readFileSync(path.join(userData, name, 'super_block')).toString())
+    var inode_table = JSON.parse(fs.readFileSync(path.join(userData, name, 'inode_table')).toString())
+    var data_bitmap_buffer = fs.readFileSync(path.join(userData, name, 'data_bitmap_buffer'))
+    var data_block_buffer = fs.readFileSync(path.join(userData, name, 'data_block_buffer'))
     return new Device(name, super_block, inode_table, data_bitmap_buffer, data_block_buffer)
   }
   static create (name) {

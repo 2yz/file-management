@@ -138,7 +138,6 @@ export default class VFS {
     // add_reg_file_to_parent
     var parent = JSON.parse(this.read_file(parent_inode_index).toString())
     parent.push({inode: file_inode_index, file_type: FILE_TYPE.EXT2_FT_REG_FILE, name: name})
-    console.log('create_reg_file', parent)
     this.update_file(Buffer.from(JSON.stringify(parent)), parent_inode_index)
     return this.inode_table.length
   }
@@ -185,8 +184,8 @@ export default class VFS {
     }
     device.inode_table = []
     device.data_bitmap_buffer = Buffer.alloc(device.size / block_size / 8)
-    var fs = new VFS(device)
-    fs.create_root_dir()
+    var vfs = new VFS(device)
+    vfs.create_root_dir()
     return true
   }
   static mount (device) {

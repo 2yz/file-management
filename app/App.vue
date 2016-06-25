@@ -186,25 +186,25 @@
   import Device from './core/device'
   import VFS from './core/vfs'
   import FILE_TYPE from './core/const/file_type'
-  const {dialog} = require('electron').remote
+  const {app, dialog} = require('electron').remote
 
   var fs_name = 'my-fs'
   var device = null
   var vfs = null
+  var userData = app.getPath('userData')
 
   export default {
     ready () {
       try {
         device = Device.read(fs_name)
       } catch (e) {
-        console.log('device read err:', e)
+        console.log('device read error:', e)
         device = Device.create(fs_name)
       }
       if (!device) {
         dialog.showMessageBox({buttons: ['好的'], message: '无法读取/创建磁盘'})
         return
       }
-      console.log('device:', device)
       this.mount()
     },
     data () {
@@ -229,7 +229,7 @@
         // 重命名
         file_name_rename: '',
         // 设备路径
-        device_path: path.resolve(fs_name)
+        device_path: path.join(userData, fs_name)
       }
     },
     methods: {
@@ -321,17 +321,16 @@
         }.bind(this))
       },
       export_file () {
-        var export_dir_name = fs_name + '-exported'
-        var export_path = path.join(export_dir_name, this.file_name)
-        var export_absolute_path = path.resolve(export_path)
+        var export_dir_path = path.join(userData, fs_name + '-exported')
+        var export_path = path.join(export_dir_path, this.file_name)
         try {
-          fs.accessSync(export_dir_name)
+          fs.accessSync(export_dir_path)
         } catch (e) {
-          fs.mkdirSync(export_dir_name)
+          fs.mkdirSync(export_dir_path)
         }
         fs.writeFile(export_path, vfs.read_file(this.file_inode), function (err) {
           if (err) return dialog.showMessageBox({buttons: ['好的'], message: err.toString()})
-          dialog.showMessageBox({buttons: ['好的'], message: '文件已导出至 ' + export_absolute_path})
+          dialog.showMessageBox({buttons: ['好的'], message: '文件已导出至 ' + export_path})
         })
       },
       show_create () {
