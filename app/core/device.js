@@ -30,7 +30,7 @@ export default class Device {
     }
   }
   static read (name) {
-    fs.accessSync(name)
+    fs.accessSync(path.join(userData, name))
     var super_block = JSON.parse(fs.readFileSync(path.join(userData, name, 'super_block')).toString())
     var inode_table = JSON.parse(fs.readFileSync(path.join(userData, name, 'inode_table')).toString())
     var data_bitmap_buffer = fs.readFileSync(path.join(userData, name, 'data_bitmap_buffer'))

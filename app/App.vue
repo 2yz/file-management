@@ -198,7 +198,6 @@
       try {
         device = Device.read(fs_name)
       } catch (e) {
-        console.log('device read error:', e)
         device = Device.create(fs_name)
       }
       if (!device) {
