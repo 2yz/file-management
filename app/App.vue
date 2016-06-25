@@ -303,12 +303,6 @@
       },
       import_file () {
         dialog.showOpenDialog({
-          filters: [
-            {name: 'Images', extensions: ['jpg', 'png', 'gif']},
-            {name: 'Movies', extensions: ['mkv', 'avi', 'mp4']},
-            {name: 'Custom File Type', extensions: ['as']},
-            {name: 'All Files', extensions: ['*']}
-          ],
           properties: ['openFile']
         }, function (files) {
           files.forEach(this.import_local_file)
