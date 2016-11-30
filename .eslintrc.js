@@ -13,7 +13,11 @@ module.exports = {
     // allow debugger during development
     'no-debugger': process.env.NODE_ENV === 'production' ? 2 : 0,
     // http://eslint.org/docs/rules/camelcase
-    'camelcase': 0
+    'camelcase': 0,
+    // custom pattern
+    'no-trailing-spaces': 0,
+    'no-multiple-empty-lines': 0,
+    'space-before-function-paren': 0
   },
   'env': {
     'browser': true,
