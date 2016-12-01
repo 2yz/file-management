@@ -5,9 +5,9 @@ export default class FSInterface {
 
   /**
    * Excute Command
-   * @param {Object} employee - The employee who is responsible for the project.
-   * @param {string} employee.name - The name of the employee.
-   * @param {string} employee.department - The employee's department.
+   * @param {Object} command - Command Object
+   * @param {string} command.method - Command Method
+   * @param {string[]} command.args - Command Args Array
    */
   execute(command) {
 
