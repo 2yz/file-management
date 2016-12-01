@@ -51,6 +51,7 @@
             </div>
           </div>
         </div>
+
         <!--文件信息-->
         <div class="pane">
           <table class="table-striped">
@@ -111,6 +112,12 @@
             </tbody>
           </table>
         </div>
+
+
+        <!--将一下替换为-->
+        <preview>
+
+        </preview>
         <!--文件-->
         <div class="pane-sm sidebar padded-more" v-bind:style="{ display: mode === 'file' ? 'block' : 'none' }">
           <div>
@@ -123,6 +130,7 @@
             </div>
           </div>
         </div>
+
         <!--文本-->
         <div class="pane sidebar padded-more" v-bind:style="{ display: mode === 'text' ? 'block' : 'none' }">
           <div>
@@ -137,6 +145,7 @@
             </div>
           </div>
         </div>
+
         <!--图片-->
         <div class="pane sidebar padded-more" v-bind:style="{ display: mode === 'image' ? 'block' : 'none' }">
           <div>
@@ -152,6 +161,7 @@
             </div>
           </div>
         </div>
+
         <!--音频-->
         <div class="pane sidebar padded-more" v-bind:style="{ display: mode === 'audio' ? 'block' : 'none' }">
           <div>
@@ -167,6 +177,7 @@
             </div>
           </div>
         </div>
+
         <!--重命名-->
         <div class="pane-sm sidebar padded-more" v-bind:style="{ display: mode === 'rename' ? 'block' : 'none' }">
           <div>
@@ -180,6 +191,7 @@
             </div>
           </div>
         </div>
+
       </div>
     </div>
     <footer class="toolbar toolbar-footer">
