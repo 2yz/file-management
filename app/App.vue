@@ -32,21 +32,27 @@
             <div class="form-group">
               <div>
                 <label>新建文件夹</label>
-                <button v-on:click="create_dir" type="button" class="btn btn-mini btn-default" style="float: right;">新建</button>
+                <button v-on:click="create_dir" type="button" class="btn btn-mini btn-default" style="float: right;">
+                  新建
+                </button>
               </div>
               <input v-model="new_dir_name" class="form-control" placeholder="文件夹名">
             </div>
             <div class="form-group">
               <div>
                 <label>新建文件</label>
-                <button v-on:click="create_reg_file" type="button" class="btn btn-mini btn-default" style="float: right;">新建</button>
+                <button v-on:click="create_reg_file" type="button" class="btn btn-mini btn-default"
+                        style="float: right;">新建
+                </button>
               </div>
               <input v-model="new_file_name" class="form-control" placeholder="文件名">
             </div>
             <div class="form-group">
               <div>
                 <label>导入文件</label>
-                <button v-on:click="import_file" type="button" class="btn btn-mini btn-default" style="float: right;">导入</button>
+                <button v-on:click="import_file" type="button" class="btn btn-mini btn-default" style="float: right;">
+                  导入
+                </button>
               </div>
             </div>
           </div>
@@ -200,7 +206,7 @@
   </div>
 </template>
 
-<script>
+<script type="text/ecmascript-6">
   import fs from 'fs'
   import path from 'path'
   import mime from 'mime'
@@ -209,9 +215,12 @@
   import FILE_TYPE from './core/const/file_type'
   const {app, dialog} = require('electron').remote
 
+  import FSFactory from './core/fs/factory'
+  import FSCommand from './core/fs/command'
+
   var fs_name = 'my-fs'
   var device = null
-  var vfs = null
+  var vfs_old = null
   var userData = app.getPath('userData')
 
   export default {
@@ -256,11 +265,11 @@
       read_dir (inode_index) {
         this.inode_index = inode_index
         var items = []
-        var dir = vfs.read_dir(inode_index)
+        var dir = vfs_old.read_dir(inode_index)
         for (var i = 0; i < dir.length; ++i) {
           var entry = dir[i]
           if (entry.inode > 0) {
-            var inode = vfs.inode_table[entry.inode - 1]
+            var inode = vfs_old.inode_table[entry.inode - 1]
             items.push({
               inode: entry.inode, file_type: entry.file_type, name: entry.name,
               i_mode: inode.i_mode, i_size: inode.i_size, i_mtime: inode.i_mtime,
@@ -269,8 +278,8 @@
           }
         }
         this.items = items
-        this.size = vfs.super_block.block_size * vfs.super_block.blocks_count
-        this.free_size = vfs.super_block.block_size * vfs.super_block.free_blocks_count
+        this.size = vfs_old.super_block.block_size * vfs_old.super_block.blocks_count
+        this.free_size = vfs_old.super_block.block_size * vfs_old.super_block.free_blocks_count
         this.mode = ''
       },
       refresh () {
@@ -278,20 +287,20 @@
       },
       format () {
         if (!device) return dialog.showMessageBox({buttons: ['好的'], message: '无磁盘'})
-        if (vfs) return dialog.showMessageBox({buttons: ['好的'], message: '请先卸载文件系统'})
+        if (vfs_old) return dialog.showMessageBox({buttons: ['好的'], message: '请先卸载文件系统'})
         VFS.format(device, 1024)
         dialog.showMessageBox({buttons: ['好的'], message: '格式化成功'})
       },
       mount () {
         if (!device) return
-        if (vfs) return dialog.showMessageBox({buttons: ['好的'], message: '已挂载'})
-        vfs = VFS.mount(device)
-        if (!vfs) return dialog.showMessageBox({buttons: ['好的'], message: '未格式化，无法挂载'})
+        if (vfs_old) return dialog.showMessageBox({buttons: ['好的'], message: '已挂载'})
+        vfs_old = VFS.mount(device)
+        if (!vfs_old) return dialog.showMessageBox({buttons: ['好的'], message: '未格式化，无法挂载'})
         this.read_dir(1)
         dialog.showMessageBox({buttons: ['好的'], message: '挂载成功'})
       },
       unmount () {
-        vfs = null
+        vfs_old = null
         this.inode_index = 0
         this.items = []
         this.size = 0
@@ -305,7 +314,7 @@
       },
       create_dir () {
         try {
-          vfs.create_dir(this.new_dir_name, this.inode_index)
+          vfs_old.create_dir(this.new_dir_name, this.inode_index)
           this.new_dir_name = ''
           this.refresh()
         } catch (e) {
@@ -314,7 +323,7 @@
       },
       create_reg_file () {
         try {
-          vfs.create_reg_file(null, this.new_file_name, this.inode_index)
+          vfs_old.create_reg_file(null, this.new_file_name, this.inode_index)
           this.new_file_name = ''
           this.refresh()
         } catch (e) {
@@ -333,7 +342,7 @@
           try {
             if (err) return dialog.showMessageBox({buttons: ['好的'], message: err.toString()})
             var file_name = path.parse(file_path).base
-            vfs.create_reg_file(data, file_name, this.inode_index)
+            vfs_old.create_reg_file(data, file_name, this.inode_index)
             this.refresh()
           } catch (e) {
             dialog.showMessageBox({buttons: ['好的'], message: e.toString()})
@@ -348,13 +357,13 @@
         } catch (e) {
           fs.mkdirSync(export_dir_path)
         }
-        fs.writeFile(export_path, vfs.read_file(this.file_inode), function (err) {
+        fs.writeFile(export_path, vfs_old.read_file(this.file_inode), function (err) {
           if (err) return dialog.showMessageBox({buttons: ['好的'], message: err.toString()})
           dialog.showMessageBox({buttons: ['好的'], message: '文件已导出至 ' + export_path})
         })
       },
       show_create () {
-        if (!vfs) {
+        if (!vfs_old) {
           dialog.showMessageBox({buttons: ['好的'], message: '未挂载文件系统'})
           return
         }
@@ -362,14 +371,14 @@
         else this.mode = 'create'
       },
       remove_file (item) {
-        vfs.remove_file(item.inode, this.inode_index)
+        vfs_old.remove_file(item.inode, this.inode_index)
         this.refresh()
       },
       open_dir (item) {
         this.read_dir(item.inode)
       },
       open_root_dir () {
-        if (!vfs) {
+        if (!vfs_old) {
           dialog.showMessageBox({buttons: ['好的'], message: '未挂载文件系统'})
           return
         }
@@ -403,7 +412,7 @@
       open_text_file (item) {
         this.file_inode = item.inode
         this.file_name = item.name
-        this.file_text = vfs.read_file(item.inode).toString()
+        this.file_text = vfs_old.read_file(item.inode).toString()
         this.mode = 'text'
       },
       open_image_file (item) {
@@ -411,7 +420,7 @@
         this.file_name = item.name
         this.mode = 'image'
         var arr = ['data:' + item.mime_type + ';base64,']
-        arr.push(vfs.read_file(item.inode).toString('base64'))
+        arr.push(vfs_old.read_file(item.inode).toString('base64'))
         this.file_image_src = arr.join('')
       },
       open_audio_file (item) {
@@ -419,7 +428,7 @@
         this.file_name = item.name
         this.mode = 'audio'
         var arr = ['data:' + item.mime_type + ';base64,']
-        arr.push(vfs.read_file(item.inode).toString('base64'))
+        arr.push(vfs_old.read_file(item.inode).toString('base64'))
         this.file_audio_src = arr.join('')
       },
       close_file () {
@@ -429,7 +438,7 @@
         this.mode = ''
       },
       save_file_text () {
-        vfs.update_file(Buffer.from(this.file_text), this.file_inode)
+        vfs_old.update_file(Buffer.from(this.file_text), this.file_inode)
         this.close_file()
         this.refresh()
         dialog.showMessageBox({buttons: ['好的'], message: '保存成功'})
@@ -442,7 +451,7 @@
       },
       rename_file () {
         try {
-          vfs.rename_file(this.file_name_rename, this.file_inode, this.inode_index)
+          vfs_old.rename_file(this.file_name_rename, this.file_inode, this.inode_index)
           this.close_rename()
           this.refresh()
         } catch (e) {
