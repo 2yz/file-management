@@ -12,14 +12,14 @@
             <span class="icon icon-plus"></span>&nbsp;新建
           </button>
         </div>
-        <div class="btn-group pull-right">
-          <button v-on:click="write" class="btn btn-default">写回磁盘</button>
-        </div>
-        <div class="btn-group pull-right">
-          <button v-on:click="mount" class="btn btn-default">挂载</button>
-          <button v-on:click="unmount" class="btn btn-default">卸载</button>
-          <button v-on:click="format" class="btn btn-default">格式化</button>
-        </div>
+        <!--<div class="btn-group pull-right">-->
+        <!--<button v-on:click="write" class="btn btn-default">写回磁盘</button>-->
+        <!--</div>-->
+        <!--<div class="btn-group pull-right">-->
+        <!--<button v-on:click="mount" class="btn btn-default">挂载</button>-->
+        <!--<button v-on:click="unmount" class="btn btn-default">卸载</button>-->
+        <!--<button v-on:click="format" class="btn btn-default">格式化</button>-->
+        <!--</div>-->
       </div>
     </header>
     <div class="window-content">
@@ -67,49 +67,7 @@
             </tr>
             </thead>
             <tbody>
-            <tr v-for="item in items">
-              <td>{{item.name}}</td>
-              <td>{{item.file_type | resolve_file_type}}</td>
-              <td>
-                <span v-if="is_reg_file(item)">{{item.mime_type}}</span>
-              </td>
-              <td>{{item.i_size}} 字节</td>
-              <td>{{item.i_mtime | date_filter}}</td>
-              <td>
-                <div v-if="is_reg_file(item)">
-                  <button v-on:click="open_file(item)" class="btn btn-mini btn-default">
-                    打开
-                  </button>
-                  <button v-on:click="open_rename(item)" class="btn btn-mini btn-default">
-                    重命名
-                  </button>
-                  <button v-on:click="remove_file(item)" class="btn btn-mini btn-default">
-                    删除
-                  </button>
-                </div>
-                <div v-if="is_dir(item)">
-                  <button v-on:click="open_dir(item)" class="btn btn-mini btn-default">
-                    打开
-                  </button>
-                  <button v-on:click="open_rename(item)" class="btn btn-mini btn-default">
-                    重命名
-                  </button>
-                  <button v-on:click="remove_file(item)" class="btn btn-mini btn-default">
-                    删除
-                  </button>
-                </div>
-                <div v-if="is_current_dir(item)">
-                  <button v-on:click="open_dir(item)" class="btn btn-mini btn-default">
-                    当前目录
-                  </button>
-                </div>
-                <div v-if="is_up_dir(item)">
-                  <button v-on:click="open_dir(item)" class="btn btn-mini btn-default">
-                    返回上级目录
-                  </button>
-                </div>
-              </td>
-            </tr>
+            <tr v-for="file in files" is="item-component" v-bind:path="file"></tr>
             </tbody>
           </table>
         </div>
@@ -180,7 +138,7 @@
       </div>
     </div>
     <footer class="toolbar toolbar-footer">
-      <h1 class="title">磁盘文件路径：{{device_path}} ， 总空间：{{size}} 字节， 剩余空间：{{free_size}} 字节</h1>
+      <!--<h1 class="title">磁盘文件路径：{{device_path}} ， 总空间：{{size}} 字节， 剩余空间：{{free_size}} 字节</h1>-->
     </footer>
   </div>
 </template>
@@ -189,34 +147,44 @@
   import fs from 'fs'
   import path from 'path'
   import mime from 'mime'
-  import Device from './core/device'
+  import DeviceOld from './core/device_old'
   import VFS from './core/vfs_old'
   import FILE_TYPE from './core/const/file_type'
   const {app, dialog} = require('electron').remote
 
+  import ItemComponent from './component/item'
+
   import FSFactory from './core/fs/factory'
-  import FSCommand from './core/fs/command'
+  import VDevice from './core/vdevice'
+  var commandManager = null
 
   var fs_name = 'my-fs'
   var device = null
   var vfs_old = null
   var userData = app.getPath('userData')
 
+
+
   export default {
     ready () {
-      try {
-        device = Device.read(fs_name)
-      } catch (e) {
-        device = Device.create(fs_name)
-      }
-      if (!device) {
-        dialog.showMessageBox({buttons: ['好的'], message: '无法读取/创建磁盘'})
-        return
-      }
-      this.mount()
+      /*
+       try {
+       device = DeviceOld.read(fs_name)
+       } catch (e) {
+       device = DeviceOld.create(fs_name)
+       }
+       if (!device) {
+       dialog.showMessageBox({buttons: ['好的'], message: '无法读取/创建磁盘'})
+       return
+       }
+       this.mount()
+       */
     },
     data () {
       return {
+        files: [],
+
+        // old
         inode_index: 0,
         items: [],
         size: 0,
@@ -240,6 +208,7 @@
         device_path: path.join(userData, fs_name)
       }
     },
+
     methods: {
       read_dir (inode_index) {
         this.inode_index = inode_index
@@ -455,6 +424,9 @@
       is_up_dir (item) {
         return item.file_type === FILE_TYPE.EXT2_FT_DIR && item.name === '..'
       }
+    },
+    components: {
+      ItemComponent
     }
   }
 </script>
