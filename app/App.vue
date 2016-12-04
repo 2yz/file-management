@@ -6,6 +6,9 @@
           <button v-on:click="open_root_dir" class="btn btn-default">
             <span class="icon icon-home"></span>&nbsp;根目录
           </button>
+          <button onclick="alert('yooo')">
+            click me!
+          </button>
         </div>
         <div class="btn-group">
           <button v-on:click="show_create" class="btn btn-default">
@@ -24,7 +27,7 @@
     </header>
     <div class="window-content">
       <div class="pane-group">
-        <div class="pane-sm sidebar padded-more" v-bind:style="{ display: mode === 'create' ? 'block' : 'none' }">
+        <div class="pane-sm sidebar padded-more">
           <div>
             <div class="form-group">
               <div>
@@ -54,6 +57,8 @@
             </div>
           </div>
         </div>
+
+        <!--文件信息-->
         <div class="pane">
           <table class="table-striped">
             <thead>
@@ -71,6 +76,13 @@
             </tbody>
           </table>
         </div>
+
+
+        <!--将一下替换为-->
+        <preview v-bind:msg.sync="{'mode': mode, 'free_size': free_size, 'file_inode': file_inode}">
+
+        </preview>
+        <!--文件-->
         <div class="pane-sm sidebar padded-more" v-bind:style="{ display: mode === 'file' ? 'block' : 'none' }">
           <div>
             <div class="form-group">
@@ -82,6 +94,8 @@
             </div>
           </div>
         </div>
+
+        <!--文本-->
         <div class="pane sidebar padded-more" v-bind:style="{ display: mode === 'text' ? 'block' : 'none' }">
           <div>
             <div class="form-group">
@@ -95,6 +109,8 @@
             </div>
           </div>
         </div>
+
+        <!--图片-->
         <div class="pane sidebar padded-more" v-bind:style="{ display: mode === 'image' ? 'block' : 'none' }">
           <div>
             <div class="form-group">
@@ -109,6 +125,8 @@
             </div>
           </div>
         </div>
+
+        <!--音频-->
         <div class="pane sidebar padded-more" v-bind:style="{ display: mode === 'audio' ? 'block' : 'none' }">
           <div>
             <div class="form-group">
@@ -123,6 +141,8 @@
             </div>
           </div>
         </div>
+
+        <!--重命名-->
         <div class="pane-sm sidebar padded-more" v-bind:style="{ display: mode === 'rename' ? 'block' : 'none' }">
           <div>
             <div class="form-group">
@@ -135,6 +155,7 @@
             </div>
           </div>
         </div>
+
       </div>
     </div>
     <footer class="toolbar toolbar-footer">
@@ -157,6 +178,8 @@
   import FSFactory from './core/fs/factory'
   import VDevice from './core/vdevice'
   var commandManager = null
+
+  import Preview from './Preview'
 
   var fs_name = 'my-fs'
   var device = null
@@ -644,7 +667,8 @@
     },
 
     components: {
-      ItemComponent
+      ItemComponent,
+      Preview
     }
   }
 </script>
