@@ -13,6 +13,9 @@ Vue.filter('resolve_file_type_old', function (value) {
 })
 
 Vue.filter('date_filter', function (value) {
+  if (!value) {
+    return ''
+  }
   var date = new Date(value)
   return format('yyyy-MM-dd hh:mm:ss', date)
 })
