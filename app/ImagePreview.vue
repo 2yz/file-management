@@ -1,5 +1,7 @@
 <template>
-
+  <h4>
+    image template
+  </h4>
 </template>
 
 <style>
@@ -10,9 +12,10 @@
   module.exports = {
     props: [],
     data: function () {
+      return {
 
+      }
     },
-    template: '<h4>imagetemplate</h4>',
     methods: {
 
     }

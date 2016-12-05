@@ -6,9 +6,9 @@
           <button v-on:click="open_root_dir" class="btn btn-default">
             <span class="icon icon-home"></span>&nbsp;根目录
           </button>
-          <button onclick="alert('yooo')">
-            click me!
-          </button>
+          <span>
+            {{free_siz}}
+          </span>
         </div>
         <div class="btn-group">
           <button v-on:click="show_create" class="btn btn-default">
@@ -27,7 +27,7 @@
     </header>
     <div class="window-content">
       <div class="pane-group">
-        <div class="pane-sm sidebar padded-more">
+        <div class="pane-sm sidebar padded-more" v-bind:style="{ display: mode === 'create' ? 'block' : 'none' }">
           <div>
             <div class="form-group">
               <div>
@@ -120,69 +120,10 @@
         </div>
 
 
-        <!--将一下替换为-->
-        <preview v-bind:msg.sync="{'mode': mode, 'free_size': free_size, 'file_inode': file_inode}">
+        <!--文件预览-->
+        <preview v-bind:msg="{'free_size': free_size}">
 
         </preview>
-        <!--文件-->
-        <div class="pane-sm sidebar padded-more" v-bind:style="{ display: mode === 'file' ? 'block' : 'none' }">
-          <div>
-            <div class="form-group">
-              <label>{{file_name}}</label>
-            </div>
-            <div class="form-actions">
-              <button v-on:click="close_file" type="button" class="btn btn-form btn-default">关闭</button>
-              <button v-on:click="export_file" type="button" class="btn btn-form btn-default">导出</button>
-            </div>
-          </div>
-        </div>
-
-        <!--文本-->
-        <div class="pane sidebar padded-more" v-bind:style="{ display: mode === 'text' ? 'block' : 'none' }">
-          <div>
-            <div class="form-group">
-              <label>{{file_name}}</label>
-              <textarea v-model="file_text" class="form-control" rows="5"></textarea>
-            </div>
-            <div class="form-actions">
-              <button v-on:click="close_file" type="button" class="btn btn-form btn-default">关闭</button>
-              <button v-on:click="export_file" type="button" class="btn btn-form btn-default">导出</button>
-              <button v-on:click="save_file_text" type="button" class="btn btn-form btn-primary">保存</button>
-            </div>
-          </div>
-        </div>
-
-        <!--图片-->
-        <div class="pane sidebar padded-more" v-bind:style="{ display: mode === 'image' ? 'block' : 'none' }">
-          <div>
-            <div class="form-group">
-              <label>{{file_name}}</label>
-            </div>
-            <div class="form-group">
-              <img v-bind:src="file_image_src" style="width: 100%;"/>
-            </div>
-            <div class="form-actions">
-              <button v-on:click="close_file" type="button" class="btn btn-form btn-default">关闭</button>
-              <button v-on:click="export_file" type="button" class="btn btn-form btn-default">导出</button>
-            </div>
-          </div>
-        </div>
-
-        <!--音频-->
-        <div class="pane sidebar padded-more" v-bind:style="{ display: mode === 'audio' ? 'block' : 'none' }">
-          <div>
-            <div class="form-group">
-              <label>{{file_name}}</label>
-            </div>
-            <div class="form-group">
-              <audio v-bind:src="file_audio_src" controls="controls"></audio>
-            </div>
-            <div class="form-actions">
-              <button v-on:click="close_file" type="button" class="btn btn-form btn-default">关闭</button>
-              <button v-on:click="export_file" type="button" class="btn btn-form btn-default">导出</button>
-            </div>
-          </div>
-        </div>
 
         <!--重命名-->
         <div class="pane-sm sidebar padded-more" v-bind:style="{ display: mode === 'rename' ? 'block' : 'none' }">
@@ -480,6 +421,9 @@
     },
     components: {
       Preview
+    },
+    events: {
+
     }
   }
 </script>
