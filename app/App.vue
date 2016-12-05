@@ -15,14 +15,14 @@
             <span class="icon icon-plus"></span>&nbsp;新建
           </button>
         </div>
-        <div class="btn-group pull-right">
-          <button v-on:click="write" class="btn btn-default">写回磁盘</button>
-        </div>
-        <div class="btn-group pull-right">
-          <button v-on:click="mount" class="btn btn-default">挂载</button>
-          <button v-on:click="unmount" class="btn btn-default">卸载</button>
-          <button v-on:click="format" class="btn btn-default">格式化</button>
-        </div>
+        <!--<div class="btn-group pull-right">-->
+        <!--<button v-on:click="write" class="btn btn-default">写回磁盘</button>-->
+        <!--</div>-->
+        <!--<div class="btn-group pull-right">-->
+        <!--<button v-on:click="mount" class="btn btn-default">挂载</button>-->
+        <!--<button v-on:click="unmount" class="btn btn-default">卸载</button>-->
+        <!--<button v-on:click="format" class="btn btn-default">格式化</button>-->
+        <!--</div>-->
       </div>
     </header>
     <div class="window-content">
@@ -72,49 +72,7 @@
             </tr>
             </thead>
             <tbody>
-            <tr v-for="item in items">
-              <td>{{item.name}}</td>
-              <td>{{item.file_type | resolve_file_type}}</td>
-              <td>
-                <span v-if="is_reg_file(item)">{{item.mime_type}}</span>
-              </td>
-              <td>{{item.i_size}} 字节</td>
-              <td>{{item.i_mtime | date_filter}}</td>
-              <td>
-                <div v-if="is_reg_file(item)">
-                  <button v-on:click="open_file(item)" class="btn btn-mini btn-default">
-                    打开
-                  </button>
-                  <button v-on:click="open_rename(item)" class="btn btn-mini btn-default">
-                    重命名
-                  </button>
-                  <button v-on:click="remove_file(item)" class="btn btn-mini btn-default">
-                    删除
-                  </button>
-                </div>
-                <div v-if="is_dir(item)">
-                  <button v-on:click="open_dir(item)" class="btn btn-mini btn-default">
-                    打开
-                  </button>
-                  <button v-on:click="open_rename(item)" class="btn btn-mini btn-default">
-                    重命名
-                  </button>
-                  <button v-on:click="remove_file(item)" class="btn btn-mini btn-default">
-                    删除
-                  </button>
-                </div>
-                <div v-if="is_current_dir(item)">
-                  <button v-on:click="open_dir(item)" class="btn btn-mini btn-default">
-                    当前目录
-                  </button>
-                </div>
-                <div v-if="is_up_dir(item)">
-                  <button v-on:click="open_dir(item)" class="btn btn-mini btn-default">
-                    返回上级目录
-                  </button>
-                </div>
-              </td>
-            </tr>
+            <tr v-for="file in files" is="item-component" v-bind:file="file"></tr>
             </tbody>
           </table>
         </div>
@@ -142,7 +100,7 @@
       </div>
     </div>
     <footer class="toolbar toolbar-footer">
-      <h1 class="title">磁盘文件路径：{{device_path}} ， 总空间：{{size}} 字节， 剩余空间：{{free_size}} 字节</h1>
+      <!--<h1 class="title">磁盘文件路径：{{device_path}} ， 总空间：{{size}} 字节， 剩余空间：{{free_size}} 字节</h1>-->
     </footer>
   </div>
 </template>
@@ -151,13 +109,16 @@
   import fs from 'fs'
   import path from 'path'
   import mime from 'mime'
-  import Device from './core/device'
+  import DeviceOld from './core/device_old'
   import VFS from './core/vfs_old'
   import FILE_TYPE from './core/const/file_type'
   const {app, dialog} = require('electron').remote
 
+  import ItemComponent from './component/item'
+
   import FSFactory from './core/fs/factory'
-  import FSCommand from './core/fs/command'
+  import VDevice from './core/vdevice'
+  var commandManager = null
 
   import Preview from './Preview'
 
@@ -165,21 +126,34 @@
   var device = null
   var vfs_old = null
   var userData = app.getPath('userData')
+
+
+
   export default {
     ready () {
-      try {
-        device = Device.read(fs_name)
-      } catch (e) {
-        device = Device.create(fs_name)
-      }
-      if (!device) {
-        dialog.showMessageBox({buttons: ['好的'], message: '无法读取/创建磁盘'})
-        return
-      }
-      this.mount()
+      VDevice.initial('native')
+      this.readDir('/Users')
+
+      /*
+       try {
+       device = DeviceOld.read(fs_name)
+       } catch (e) {
+       device = DeviceOld.create(fs_name)
+       }
+       if (!device) {
+       dialog.showMessageBox({buttons: ['好的'], message: '无法读取/创建磁盘'})
+       return
+       }
+       this.mount()
+       */
     },
-    data: function () {
+    data () {
       return {
+        currentPath: '/',
+        pathArr: [],
+        files: [],
+
+        // old
         inode_index: 0,
         items: [],
         size: 0,
@@ -203,7 +177,121 @@
         device_path: path.join(userData, fs_name)
       }
     },
+
     methods: {
+      readDir (pathStr) {
+        VDevice.getCommandManager().execute({
+          method: 'readDir',
+          args: [
+            pathStr,
+            (err, files) => {
+              if (err) return
+              this.files = files.map(file => path.join(pathStr, file))
+              this.currentPath = pathStr
+              this.pathArr.push(pathStr)
+            }
+          ]
+        })
+      },
+
+      /**
+       * @deprecated temporary
+       */
+      openFile (file) {
+        var mimeType = mime.lookup(file)
+        try {
+          switch (mimeType.split('/')[0]) {
+            case 'text':
+              this.openTextFile(file)
+              break
+            case 'image':
+              this.openImageFile(file)
+              break
+            case 'audio':
+              this.openAudioFile(file)
+              break
+            default:
+              this.openRegFile(file)
+              break
+          }
+        } catch (e) {
+          dialog.showMessageBox({buttons: ['好的'], message: e.toString()})
+        }
+      },
+      /**
+       * @deprecated temporary
+       */
+      openRegFile (file) {
+        this.file_name = path.basename(file)
+        this.mode = 'file'
+      },
+      /**
+       * @deprecated temporary
+       */
+      openTextFile (file) {
+        this.file_name = path.basename(file)
+        VDevice.getCommandManager().execute({
+          method: 'readFile',
+          args: [
+            file,
+            (err, data) => {
+              if (err) return
+              this.file_text = data.toString()
+            }
+          ]
+        })
+//        this.file_text = vfs_old.read_file(item.inode).toString()
+        this.mode = 'text'
+      },
+      /**
+       * @deprecated temporary
+       */
+      openImageFile (file) {
+        this.file_name = path.basename(file)
+        this.mode = 'image'
+        VDevice.getCommandManager().execute({
+          method: 'readFile',
+          args: [
+            file,
+            (err, data) => {
+              if (err) return
+              var arr = ['data:' + mime.lookup(file) + ';base64,']
+              arr.push(data.toString('base64'))
+              this.file_image_src = arr.join('')
+            }
+          ]
+        })
+//        var arr = ['data:' + item.mime_type + ';base64,']
+//        arr.push(vfs_old.read_file(item.inode).toString('base64'))
+//        this.file_image_src = arr.join('')
+      },
+      /**
+       * @deprecated temporary
+       */
+      openAudioFile (file) {
+        this.file_name = path.basename(file)
+        this.mode = 'audio'
+        VDevice.getCommandManager().execute({
+          method: 'readFile',
+          args: [
+            file,
+            (err, data) => {
+              if (err) return
+              var arr = ['data:' + mime.lookup(file) + ';base64,']
+              arr.push(data.toString('base64'))
+              this.file_audio_src = arr.join('')
+            }
+          ]
+        })
+//        var arr = ['data:' + item.mime_type + ';base64,']
+//        arr.push(vfs_old.read_file(item.inode).toString('base64'))
+//        this.file_audio_src = arr.join('')
+      },
+
+      // old
+      /**
+       * @deprecated
+       */
       read_dir (inode_index) {
         this.inode_index = inode_index
         var items = []
@@ -224,15 +312,24 @@
         this.free_size = vfs_old.super_block.block_size * vfs_old.super_block.free_blocks_count
         this.mode = ''
       },
+      /**
+       * @deprecated
+       */
       refresh () {
         this.read_dir(this.inode_index)
       },
+      /**
+       * @deprecated
+       */
       format () {
         if (!device) return dialog.showMessageBox({buttons: ['好的'], message: '无磁盘'})
         if (vfs_old) return dialog.showMessageBox({buttons: ['好的'], message: '请先卸载文件系统'})
         VFS.format(device, 1024)
         dialog.showMessageBox({buttons: ['好的'], message: '格式化成功'})
       },
+      /**
+       * @deprecated since version 0.2.0
+       */
       mount () {
         if (!device) return
         if (vfs_old) return dialog.showMessageBox({buttons: ['好的'], message: '已挂载'})
@@ -241,6 +338,9 @@
         this.read_dir(1)
         dialog.showMessageBox({buttons: ['好的'], message: '挂载成功'})
       },
+      /**
+       * @deprecated since version 0.2.0
+       */
       unmount () {
         vfs_old = null
         this.inode_index = 0
@@ -249,11 +349,17 @@
         this.free_size = 0
         dialog.showMessageBox({buttons: ['好的'], message: '卸载成功'})
       },
+      /**
+       * @deprecated since version 0.2.0
+       */
       write () {
         if (!device) return
         if (device.write()) dialog.showMessageBox({buttons: ['好的'], message: '写回成功'})
         else dialog.showMessageBox({buttons: ['好的'], message: '写回失败'})
       },
+      /**
+       * @deprecated since version 0.2.0
+       */
       create_dir () {
         try {
           vfs_old.create_dir(this.new_dir_name, this.inode_index)
@@ -263,6 +369,9 @@
           dialog.showMessageBox({buttons: ['好的'], message: e.toString()})
         }
       },
+      /**
+       * @deprecated since version 0.2.0
+       */
       create_reg_file () {
         try {
           vfs_old.create_reg_file(null, this.new_file_name, this.inode_index)
@@ -272,6 +381,9 @@
           dialog.showMessageBox({buttons: ['好的'], message: e.toString()})
         }
       },
+      /**
+       * @deprecated since version 0.2.0
+       */
       import_file () {
         dialog.showOpenDialog({
           properties: ['openFile']
@@ -279,6 +391,9 @@
           files.forEach(this.import_local_file)
         }.bind(this))
       },
+      /**
+       * @deprecated since version 0.2.0
+       */
       import_local_file (file_path) {
         fs.readFile(file_path, function (err, data) {
           try {
@@ -291,6 +406,9 @@
           }
         }.bind(this))
       },
+      /**
+       * @deprecated since version 0.2.0
+       */
       export_file () {
         var export_dir_path = path.join(userData, fs_name + '-exported')
         var export_path = path.join(export_dir_path, this.file_name)
@@ -304,6 +422,9 @@
           dialog.showMessageBox({buttons: ['好的'], message: '文件已导出至 ' + export_path})
         })
       },
+      /**
+       * @deprecated since version 0.2.0
+       */
       show_create () {
         if (!vfs_old) {
           dialog.showMessageBox({buttons: ['好的'], message: '未挂载文件系统'})
@@ -312,13 +433,22 @@
         if (this.mode === 'create') this.mode = ''
         else this.mode = 'create'
       },
+      /**
+       * @deprecated since version 0.2.0
+       */
       remove_file (item) {
         vfs_old.remove_file(item.inode, this.inode_index)
         this.refresh()
       },
+      /**
+       * @deprecated since version 0.2.0
+       */
       open_dir (item) {
         this.read_dir(item.inode)
       },
+      /**
+       * @deprecated since version 0.2.0
+       */
       open_root_dir () {
         if (!vfs_old) {
           dialog.showMessageBox({buttons: ['好的'], message: '未挂载文件系统'})
@@ -326,6 +456,9 @@
         }
         this.read_dir(1)
       },
+      /**
+       * @deprecated since version 0.2.0
+       */
       open_file (item) {
         try {
           switch (item.mime_type.split('/')[0]) {
@@ -346,17 +479,26 @@
           dialog.showMessageBox({buttons: ['好的'], message: e.toString()})
         }
       },
+      /**
+       * @deprecated since version 0.2.0
+       */
       open_reg_file (item) {
         this.file_inode = item.inode
         this.file_name = item.name
         this.mode = 'file'
       },
+      /**
+       * @deprecated since version 0.2.0
+       */
       open_text_file (item) {
         this.file_inode = item.inode
         this.file_name = item.name
         this.file_text = vfs_old.read_file(item.inode).toString()
         this.mode = 'text'
       },
+      /**
+       * @deprecated since version 0.2.0
+       */
       open_image_file (item) {
         this.file_inode = item.inode
         this.file_name = item.name
@@ -365,6 +507,9 @@
         arr.push(vfs_old.read_file(item.inode).toString('base64'))
         this.file_image_src = arr.join('')
       },
+      /**
+       * @deprecated since version 0.2.0
+       */
       open_audio_file (item) {
         this.file_inode = item.inode
         this.file_name = item.name
@@ -373,24 +518,36 @@
         arr.push(vfs_old.read_file(item.inode).toString('base64'))
         this.file_audio_src = arr.join('')
       },
+      /**
+       * @deprecated since version 0.2.0
+       */
       close_file () {
         this.file_inode = 0
         this.file_name = ''
         this.file_text = ''
         this.mode = ''
       },
+      /**
+       * @deprecated since version 0.2.0
+       */
       save_file_text () {
         vfs_old.update_file(Buffer.from(this.file_text), this.file_inode)
         this.close_file()
         this.refresh()
         dialog.showMessageBox({buttons: ['好的'], message: '保存成功'})
       },
+      /**
+       * @deprecated since version 0.2.0
+       */
       open_rename (item) {
         this.file_inode = item.inode
         this.file_name = item.name
         this.file_name_rename = ''
         this.mode = 'rename'
       },
+      /**
+       * @deprecated since version 0.2.0
+       */
       rename_file () {
         try {
           vfs_old.rename_file(this.file_name_rename, this.file_inode, this.inode_index)
@@ -400,30 +557,59 @@
           dialog.showMessageBox({buttons: ['好的'], message: e.toString()})
         }
       },
+      /**
+       * @deprecated since version 0.2.0
+       */
       close_rename () {
         this.file_inode = 0
         this.file_name = ''
         this.file_name_rename = ''
         this.mode = ''
       },
+      /**
+       * @deprecated since version 0.2.0
+       */
       is_reg_file (item) {
         return item.file_type === FILE_TYPE.EXT2_FT_REG_FILE
       },
+      /**
+       * @deprecated since version 0.2.0
+       */
       is_dir (item) {
         return item.file_type === FILE_TYPE.EXT2_FT_DIR && item.name !== '.' && item.name !== '..'
       },
+      /**
+       * @deprecated since version 0.2.0
+       */
       is_current_dir (item) {
         return item.file_type === FILE_TYPE.EXT2_FT_DIR && item.name === '.'
       },
+      /**
+       * @deprecated since version 0.2.0
+       */
       is_up_dir (item) {
         return item.file_type === FILE_TYPE.EXT2_FT_DIR && item.name === '..'
       }
     },
-    components: {
-      Preview
-    },
-    events: {
 
+    events: {
+      openMsg (msg) {
+        var command = VDevice.getCommandManager()
+        if (msg.isFile) {
+          this.openFile(msg.file)
+        } else if (msg.isDirectory) {
+          this.readDir(msg.file)
+        }
+      },
+      renameMsg (msg) {
+      },
+      removeMsg (msg) {
+      }
+    },
+
+    components: {
+      ItemComponent,
+      Preview
     }
   }
 </script>

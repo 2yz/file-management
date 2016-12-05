@@ -1,11 +1,12 @@
 {
   "name": "file-management",
   "productName": "File Management",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "File Management based on Electron Boilerplate Vue",
   "author": "Yuan Yizhe <yuanyizhe@gmail.com>",
   "main": "background.js",
   "dependencies": {
+    "date-format": "0.0.2",
     "mime": "^1.3.4"
   }
 }
