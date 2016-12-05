@@ -1,4 +1,5 @@
 import fs from 'fs'
+import path from 'path'
 import FSInterface from './vfs'
 
 
@@ -8,20 +9,25 @@ export default class FSUnix extends FSInterface {
     this._type = 'unix'
   }
 
-  writeFile(path, data, callback) {
-    fs.writeFile(path, data, callback)
+  writeFile(file, data, callback) {
+    fs.writeFile(file, data, callback)
   }
 
-  readFile(path, callback) {
-    fs.readFile(path, callback)
+  readFile(file, callback) {
+    fs.readFile(file, callback)
   }
 
-  readDir(path, callback) {
-    fs.readdir(path, callback)
+  readDir(file, callback) {
+    fs.readdir(file, (err, files) => {
+      if (!err && files) {
+        files = files.map(item => path.join(file, item))
+      }
+      callback(err, files, file)
+    })
   }
 
-  stat(path, callback) {
-    fs.stat(path, (err, stats) => {
+  stat(file, callback) {
+    fs.stat(file, (err, stats) => {
       if (err) {
         callback(err, null)
         return
@@ -41,22 +47,22 @@ export default class FSUnix extends FSInterface {
     fs.rename(oldPath, newPath, callback)
   }
 
-  remove(path, callback) {
-    fs.stat(path, (err, stats) => {
+  remove(file, callback) {
+    fs.stat(file, (err, stats) => {
       if (err) {
         callback(err, null)
         return
       }
       if (stats.isFile()) {
-        fs.unlink(path, callback)
+        fs.unlink(file, callback)
       } else if (stats.isDirectory()) {
-        fs.rmdir(path, callback)
+        fs.rmdir(file, callback)
       }
     })
   }
 
-  reloadDir(path, callback) {
-    this.readDir(path, callback)
+  reloadDir(file, callback) {
+    this.readDir(file, callback)
   }
 
   _resolveFileType(mode) {

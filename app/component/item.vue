@@ -48,7 +48,9 @@
       init () {
         this.name = path.basename(this.file)
         VDevice.getCommandManager().execute({
-          method: 'stat', args: [this.file, (err, stat) => {
+          method: 'stat',
+          args: [this.file],
+          callback: (err, stat) => {
             if (err) return
             this.type = stat.type
             this.mimeType = mime.lookup(this.name)
@@ -57,7 +59,7 @@
             this.stats = stat.stats
             this.isDirectory = stat.stats.isDirectory()
             this.isFile = stat.stats.isFile()
-          }]
+          }
         })
       },
       reload () {

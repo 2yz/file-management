@@ -6,9 +6,20 @@
           <button v-on:click="open_root_dir" class="btn btn-default">
             <span class="icon icon-home"></span>&nbsp;根目录
           </button>
-          <span>
-            {{free_siz}}
-          </span>
+          <button v-on:click="back" v-bind:disabled="!isBack" v-bind:class="{ 'active': !isBack }"
+                  class="btn btn-default">
+            <span class="icon icon-left"></span>&nbsp;返回
+          </button>
+          <button v-on:click="forward" v-bind:disabled="!isForward" v-bind:class="{ 'active': !isForward }"
+                  class="btn btn-default">
+            <span class="icon icon-right"></span>&nbsp;前进
+          </button>
+          <button class="btn btn-default">
+            <span class="icon icon-back"></span>&nbsp;撤销
+          </button>
+          <button class="btn btn-default">
+            <span class="icon icon-forward"></span>&nbsp;重做
+          </button>
         </div>
         <div class="btn-group">
           <button v-on:click="show_create" class="btn btn-default">
@@ -27,7 +38,7 @@
     </header>
     <div class="window-content">
       <div class="pane-group">
-        <div class="pane-sm sidebar padded-more" v-bind:style="{ display: mode === 'create' ? 'block' : 'none' }">
+        <div class="pane-sm sidebar padded-more">
           <div>
             <div class="form-group">
               <div>
@@ -100,7 +111,7 @@
       </div>
     </div>
     <footer class="toolbar toolbar-footer">
-      <h1 class="title">磁盘文件路径：{{device_path}} ， 总空间：{{size}} 字节， 剩余空间：{{free_size}} 字节</h1>
+      <!--<h1 class="title">磁盘文件路径：{{device_path}} ， 总空间：{{size}} 字节， 剩余空间：{{free_size}} 字节</h1>-->
     </footer>
   </div>
 </template>
@@ -117,8 +128,7 @@
   import ItemComponent from './component/item'
 
   import FSFactory from './core/fs/factory'
-  import VDevice from './core/vDevice'
-  var commandManager = null
+  import VDevice from './core/vdevice'
 
   import Preview from './Preview'
 
@@ -132,7 +142,9 @@
   export default {
     ready () {
       VDevice.initial('native')
-      this.readDir('/')
+      // debug
+      this.commandManager = VDevice.getCommandManager()
+      this.cd('/')
 
       /*
        try {
@@ -150,8 +162,13 @@
     data () {
       return {
         currentPath: '/',
-        pathArr: [],
         files: [],
+
+        isBack: false,
+        isForward: false,
+
+        // debug
+        commandManager: null,
 
         // old
         inode_index: 0,
@@ -179,19 +196,23 @@
     },
 
     methods: {
-      readDir (pathStr) {
-        VDevice.getCommandManager().execute({
-          method: 'readDir',
-          args: [
-            pathStr,
-            (err, files) => {
-              if (err) return
-              this.files = files.map(file => path.join(pathStr, file))
-              this.currentPath = pathStr
-              this.pathArr.push(pathStr)
-            }
-          ]
-        })
+      cd (pathStr) {
+        var command = VDevice.getCommandManager()
+        command.cd(pathStr, this._cdCallback)
+      },
+      _cdCallback (err, files, currentPath) {
+        if (err) return
+        this.files = files
+        this.currentPath = currentPath
+        var command = VDevice.getCommandManager()
+        this.isBack = command.isBack()
+        this.isForward = command.isForward()
+      },
+      back () {
+        VDevice.getCommandManager().back(this._cdCallback)
+      },
+      forward () {
+        VDevice.getCommandManager().forward(this._cdCallback)
       },
 
       /**
@@ -232,15 +253,12 @@
         this.file_name = path.basename(file)
         VDevice.getCommandManager().execute({
           method: 'readFile',
-          args: [
-            file,
-            (err, data) => {
-              if (err) return
-              this.file_text = data.toString()
-            }
-          ]
+          args: [file],
+          callback: (err, data) => {
+            if (err) return
+            this.file_text = data.toString()
+          }
         })
-//        this.file_text = vfs_old.read_file(item.inode).toString()
         this.mode = 'text'
       },
       /**
@@ -251,19 +269,14 @@
         this.mode = 'image'
         VDevice.getCommandManager().execute({
           method: 'readFile',
-          args: [
-            file,
-            (err, data) => {
-              if (err) return
-              var arr = ['data:' + mime.lookup(file) + ';base64,']
-              arr.push(data.toString('base64'))
-              this.file_image_src = arr.join('')
-            }
-          ]
+          args: [file],
+          callback: (err, data) => {
+            if (err) return
+            var arr = ['data:' + mime.lookup(file) + ';base64,']
+            arr.push(data.toString('base64'))
+            this.file_image_src = arr.join('')
+          }
         })
-//        var arr = ['data:' + item.mime_type + ';base64,']
-//        arr.push(vfs_old.read_file(item.inode).toString('base64'))
-//        this.file_image_src = arr.join('')
       },
       /**
        * @deprecated temporary
@@ -273,20 +286,36 @@
         this.mode = 'audio'
         VDevice.getCommandManager().execute({
           method: 'readFile',
-          args: [
-            file,
-            (err, data) => {
-              if (err) return
-              var arr = ['data:' + mime.lookup(file) + ';base64,']
-              arr.push(data.toString('base64'))
-              this.file_audio_src = arr.join('')
-            }
-          ]
+          args: [file],
+          callback: (err, data) => {
+            if (err) return
+            var arr = ['data:' + mime.lookup(file) + ';base64,']
+            arr.push(data.toString('base64'))
+            this.file_audio_src = arr.join('')
+          }
         })
-//        var arr = ['data:' + item.mime_type + ';base64,']
-//        arr.push(vfs_old.read_file(item.inode).toString('base64'))
-//        this.file_audio_src = arr.join('')
       },
+      /**
+       * @deprecated temporary
+       */
+      openRename (file) {
+        this.file_name = path.basename(file)
+        this.file_name_rename = ''
+        this.mode = 'rename'
+      },
+      /**
+       * @deprecated temporary
+       */
+      renameFile () {
+        try {
+          vfs_old.rename_file(this.file_name_rename, this.file_inode, this.inode_index)
+          this.close_rename()
+          this.refresh()
+        } catch (e) {
+          dialog.showMessageBox({buttons: ['好的'], message: e.toString()})
+        }
+      },
+
 
       // old
       /**
@@ -593,12 +622,12 @@
     },
 
     events: {
-      openMsg(msg) {
+      openMsg (msg) {
         var command = VDevice.getCommandManager()
         if (msg.isFile) {
           this.openFile(msg.file)
         } else if (msg.isDirectory) {
-          this.readDir(msg.file)
+          this.cd(msg.file)
         }
       },
       renameMsg (msg) {
