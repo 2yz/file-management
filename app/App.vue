@@ -15,14 +15,14 @@
             <span class="icon icon-plus"></span>&nbsp;新建
           </button>
         </div>
-        <!--<div class="btn-group pull-right">-->
-        <!--<button v-on:click="write" class="btn btn-default">写回磁盘</button>-->
-        <!--</div>-->
-        <!--<div class="btn-group pull-right">-->
-        <!--<button v-on:click="mount" class="btn btn-default">挂载</button>-->
-        <!--<button v-on:click="unmount" class="btn btn-default">卸载</button>-->
-        <!--<button v-on:click="format" class="btn btn-default">格式化</button>-->
-        <!--</div>-->
+        <div class="btn-group pull-right">
+          <button v-on:click="write" class="btn btn-default">写回磁盘</button>
+        </div>
+        <div class="btn-group pull-right">
+          <button v-on:click="mount" class="btn btn-default">挂载</button>
+          <button v-on:click="unmount" class="btn btn-default">卸载</button>
+          <button v-on:click="format" class="btn btn-default">格式化</button>
+        </div>
       </div>
     </header>
     <div class="window-content">
@@ -79,7 +79,7 @@
 
 
         <!--文件预览-->
-        <preview v-bind:msg="{'free_size': free_size}">
+        <preview v-bind:msg="file_path">
 
         </preview>
 
@@ -100,7 +100,7 @@
       </div>
     </div>
     <footer class="toolbar toolbar-footer">
-      <!--<h1 class="title">磁盘文件路径：{{device_path}} ， 总空间：{{size}} 字节， 剩余空间：{{free_size}} 字节</h1>-->
+      <h1 class="title">磁盘文件路径：{{device_path}} ， 总空间：{{size}} 字节， 剩余空间：{{free_size}} 字节</h1>
     </footer>
   </div>
 </template>
@@ -117,7 +117,7 @@
   import ItemComponent from './component/item'
 
   import FSFactory from './core/fs/factory'
-  import VDevice from './core/vdevice'
+  import VDevice from './core/vDevice'
   var commandManager = null
 
   import Preview from './Preview'
@@ -132,7 +132,7 @@
   export default {
     ready () {
       VDevice.initial('native')
-      this.readDir('/Users')
+      this.readDir('/')
 
       /*
        try {
@@ -593,7 +593,7 @@
     },
 
     events: {
-      openMsg (msg) {
+      openMsg(msg) {
         var command = VDevice.getCommandManager()
         if (msg.isFile) {
           this.openFile(msg.file)

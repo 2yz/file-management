@@ -1,85 +1,41 @@
 <template xmlns:v-on="http://www.w3.org/1999/xhtml" xmlns:v-bind="http://www.w3.org/1999/xhtml">
 
-  <h2>
-    {{msg}}
-  </h2>
 
-  <!--文件-->
-  <div class="pane-sm sidebar padded-more" v-bind:style="{ display: mode === 'file' ? 'block' : 'none' }">
+  <!--应该是各种文件类型的组件-->
+  <!--<div v-if="item.mimetype === 'text'">-->
+  <!--<text-preview>-->
+
+  <!--</text-preview>-->
+  <!--</div>-->
+  <div v-if="item.mimetype === 'image'">
+    <image-preview v-bind:img_src="">
+
+    </image-preview>
+  </div>
+  <!--<div v-if="item.mimetype === 'audio'">-->
+  <!--<image-preview>-->
+
+  <!--</image-preview>-->
+  <!--</div>-->
+  <!--<div v-if="item.mimetype === 'image'">-->
+  <!--<image-preview>-->
+
+  <!--</image-preview>-->
+  <!--</div>-->
+
+  <!--重命名-->
+  <div class="pane-sm sidebar padded-more" v-bind:style="{ display: mode === 'rename' ? 'block' : 'none' }">
     <div>
       <div class="form-group">
-        <label>{{file_name}}</label>
+        <label>现在的名称：{{file_name}}</label>
+        <input v-model="file_name_rename" class="form-control" placeholder="输入新名称">
       </div>
       <div class="form-actions">
-        <button type="button" class="btn btn-form btn-default">关闭</button>
-        <button type="button" class="btn btn-form btn-default">导出</button>
+        <button class="btn btn-form btn-default">关闭</button>
+        <button class="btn btn-form btn-primary">重命名</button>
       </div>
     </div>
   </div>
-
-  <!--文本-->
-  <div class="pane sidebar padded-more" v-bind:style="{ display: mode === 'text' ? 'block' : 'none' }">
-    <div>
-      <div class="form-group">
-        <label>{{file_name}}</label>
-        <!--将这里替换成另一个组件-->
-        <div class="form-actions">
-          <button type="button" class="btn btn-form btn-default">关闭</button>
-          <button type="button" class="btn btn-form btn-default">导出</button>
-          <button type="button" class="btn btn-form btn-primary">保存</button>
-        </div>
-      </div>
-    </div>
-  </div>
-    <!--图片-->
-    <div class="pane sidebar padded-more" v-bind:style="{ display: mode === 'image' ? 'block' : 'none' }">
-      <div>
-        <div class="form-group">
-          <label>{{file_name}}</label>
-        </div>
-        <div class="form-group">
-          <!--将这里替换成另一个组件-->
-          <image-preview>
-
-          </image-preview>
-          <img v-bind:src="file_image_src" style="width: 100%;"/>
-        </div>
-        <div class="form-actions">
-          <button class="btn btn-form btn-default">关闭</button>
-          <button class="btn btn-form btn-default">导出</button>
-        </div>
-      </div>
-    </div>
-
-    <!--音频-->
-    <div class="pane sidebar padded-more" v-bind:style="{ display: mode === 'audio' ? 'block' : 'none' }">
-      <div>
-        <div class="form-group">
-          <label>{{file_name}}</label>
-        </div>
-        <div class="form-group">
-          <audio v-bind:src="file_audio_src" controls="controls"></audio>
-        </div>
-        <div class="form-actions">
-          <button type="button" class="btn btn-form btn-default">关闭</button>
-          <button type="button" class="btn btn-form btn-default">导出</button>
-        </div>
-      </div>
-    </div>
-
-    <!--重命名-->
-    <div class="pane-sm sidebar padded-more" v-bind:style="{ display: mode === 'rename' ? 'block' : 'none' }">
-      <div>
-        <div class="form-group">
-          <label>现在的名称：{{file_name}}</label>
-          <input v-model="file_name_rename" class="form-control" placeholder="输入新名称">
-        </div>
-        <div class="form-actions">
-          <button class="btn btn-form btn-default">关闭</button>
-          <button class="btn btn-form btn-primary">重命名</button>
-        </div>
-      </div>
-    </div>
 </template>
 
 
@@ -92,12 +48,12 @@
   import fs from 'fs'
   import path from 'path'
   import mime from 'mime'
-  import Device from './core/device'
+  //  import Device from './core/device'
   import VFS from './core/vfs_old'
   import FILE_TYPE from './core/const/file_type'
   import ImagePreview from './ImagePreview'
-//  import TextPreview from './TextPreview'
-//  import AudioPreview from './ImagePreview'
+  //  import TextPreview from './TextPreview'
+  //  import AudioPreview from './ImagePreview'
 
   class FilePreview {
     preview() {
@@ -147,12 +103,10 @@
 
   module.exports = {
     // 来自父组件的数据（必要的）
-    props: ['msg'],
+    props: ['file_path'],
     data: function () {
       return {
-        file_name: 'this is file name',
-        mode: 'block',
-        file_image_src: ''
+        img_src: ''
       }
     },
     methods: {
