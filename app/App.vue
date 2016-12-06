@@ -24,7 +24,7 @@
           </button>
         </div>
         <div class="btn-group">
-          <button v-on:click="show_create" class="btn btn-default">
+          <button v-on:click="showCreate" class="btn btn-default">
             <span class="icon icon-plus"></span>&nbsp;新建
           </button>
         </div>
@@ -45,7 +45,7 @@
             <div class="form-group">
               <div>
                 <label>新建文件夹</label>
-                <button v-on:click="create_dir" type="button" class="btn btn-mini btn-default" style="float: right;">
+                <button v-on:click="createDir" type="button" class="btn btn-mini btn-default" style="float: right;">
                   新建
                 </button>
               </div>
@@ -54,7 +54,7 @@
             <div class="form-group">
               <div>
                 <label>新建文件</label>
-                <button v-on:click="create_reg_file" type="button" class="btn btn-mini btn-default"
+                <button v-on:click="createRegFile" type="button" class="btn btn-mini btn-default"
                         style="float: right;">新建
                 </button>
               </div>
@@ -63,7 +63,7 @@
             <div class="form-group">
               <div>
                 <label>导入文件</label>
-                <button v-on:click="import_file" type="button" class="btn btn-mini btn-default" style="float: right;">
+                <button v-on:click="importFile" type="button" class="btn btn-mini btn-default" style="float: right;">
                   导入
                 </button>
               </div>
@@ -277,9 +277,6 @@
         if (err) return
         this.files = files
         this.currentPath = currentPath
-        var command = VDevice.getCommandManager()
-        // this.isBack = command.isBack()
-        // this.isForward = command.isForward()
       },
       back () {
         VDevice.getCommandManager().back(this._cdCallback)
@@ -407,6 +404,68 @@
         } else {
           this.mode = 'create'
         }
+      },
+      /**
+       * @deprecated temporary
+       */
+      createDir () {
+        VDevice.getCommandManager().execute({
+          method: 'createDir',
+          args: [
+            path.join(this.currentPath, this.new_dir_name)
+          ],
+          callback: (err) => {
+            if (err) return
+            this.refresh()
+          }
+        })
+      },
+      /**
+       * @deprecated temporary
+       */
+      createRegFile () {
+        VDevice.getCommandManager().execute({
+          method: 'createFile',
+          args: [
+            path.join(this.currentPath, this.new_file_name)
+          ],
+          callback: (err) => {
+            if (err) return
+            this.refresh()
+          }
+        })
+      },
+      /**
+       * @deprecated temporary
+       */
+      importFile () {
+        dialog.showOpenDialog({
+          properties: ['openFile']
+        }, function (files) {
+          files.forEach(this.importLocalFile)
+        }.bind(this))
+      },
+      /**
+       * @deprecated since version 0.2.0
+       */
+      importLocalFile (file_path) {
+        fs.readFile(file_path, (err, data) => {
+          if (err) {
+            dialog.showMessageBox({buttons: ['好的'], message: err.toString()})
+            return
+          }
+          VDevice.getCommandManager().execute({
+            method: 'writeFile',
+            args: [
+              path.join(this.currentPath, path.basename(file_path)),
+              data
+            ],
+            callback: (err) => {
+              if (err) return
+              this.refresh()
+            }
+          })
+        })
       },
 
       // old
