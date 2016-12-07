@@ -1,7 +1,7 @@
 <template xmlns:v-on="http://www.w3.org/1999/xhtml" xmlns:v-bind="http://www.w3.org/1999/xhtml">
 
   <div>
-    <image-preview v-bind:file_path="file_path" v-bind:style="{ display: mime_type === 'image' ? 'block' : 'none' }">
+    <image-preview v-bind:file_path.sync="file_path" v-bind:style="{ display: mime_type === 'image' ? 'block' : 'none' }" >
 
     </image-preview>
 
@@ -74,14 +74,15 @@
   module.exports = {
     props: ['file_path'],
     ready: function () {
-//      this.mime_type = 'image'
-      this.mime_type = path.extname(this.file_path)
-//      this.mime_type = mime.lookup(this.file_path)
       console.log('mime type: ')
     },
     data: function () {
       return {
-        mime_type: ''
+      }
+    },
+    computed: {
+      mime_type: function () {
+        return mime.lookup(path.basename(this.file_path)).split('/')[0]
       }
     },
     methods: {},

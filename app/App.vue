@@ -92,7 +92,7 @@
 
 
         <!--文件预览-->
-        <preview v-bind:file_path="file_path">
+        <preview v-bind:file_path.sync="file_path" v-bind:style="{display: file_path === '' ? 'none': 'block'}">
 
         </preview>
 
@@ -165,9 +165,7 @@
       return {
         currentPath: '/',
         files: [],
-
-        file_path: '/home/zhang/Desktop/fuck_off',
-
+        file_path: '',
         // debug
         commandManager: null,
 
@@ -222,6 +220,7 @@
       _cdCallback (err, files, currentPath) {
         if (err) return
         this.files = files
+        console.log(files)
         this.currentPath = currentPath
       },
       back () {
@@ -722,6 +721,9 @@
       openMsg (msg) {
         var command = VDevice.getCommandManager()
         if (msg.isFile) {
+          console.log('I have to log now')
+          this.file_path = msg.file
+          console.log(msg.file)
           this.openFile(msg.file)
         } else if (msg.isDirectory) {
           this.cd(msg.file)
