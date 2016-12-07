@@ -92,7 +92,7 @@
 
 
         <!--文件预览-->
-        <preview v-bind:msg="file_path">
+        <preview v-bind:file_path="file_path">
 
         </preview>
 
@@ -130,9 +130,9 @@
   import ItemComponent from './component/item'
 
   import FSFactory from './core/fs/factory'
-  import VDevice from './core/vdevice'
+  import VDevice from './core/vDevice'
 
-  import Preview from './Preview'
+  import Preview from './component/Preview'
 
   var fs_name = 'my-fs'
   var device = null
@@ -166,6 +166,9 @@
         currentPath: '/',
         files: [],
 
+        file_path: '/home/zhang/Desktop/fuck_off',
+
+        // debug
         commandManager: null,
 
         // old
