@@ -4,12 +4,7 @@
     <image-preview v-bind:file_path="file_path" v-bind:style="{ display: mime_type === 'image' ? 'block' : 'none' }">
 
     </image-preview>
-    <text-preview v-bind:file_path="file_path" v-bind:style="{ display: mime_type === 'text' ? 'block' : 'none' }">
 
-    </text-preview>
-    <audio-preview v-bind:file_path="file_path" v-bind:style="{ display: mime_type === 'audio' ? 'block' : 'none' }">
-
-    </audio-preview>
   </div>
 
 </template>

@@ -146,7 +146,7 @@
       VDevice.initial('native')
       // debug
       this.commandManager = VDevice.getCommandManager()
-      this.cd('/Users/Yezersky')
+      this.cd('/')
 
       /*
        try {

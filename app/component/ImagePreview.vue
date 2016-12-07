@@ -32,7 +32,9 @@
       this.openImageFile(this.file_path)
     },
     data: function () {
-      return {}
+      return {
+        file_path: ''
+      }
     },
     methods: {
       /**
@@ -41,6 +43,9 @@
       openImageFile (file) {
         this.mode = 'image'
         var vd = VDevice.getCommandManager()
+        if (!vd) {
+          return
+        }
         vd.execute({
           method: 'readFile',
           args: [file],
