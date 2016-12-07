@@ -14,15 +14,17 @@
                   class="btn btn-default">
             <span class="icon icon-right"></span>&nbsp;前进
           </button>
-          <button class="btn btn-default">
+          <button v-on:click="undo" v-bind:disabled="!isUndo" v-bind:class="{ 'active': !isUndo }"
+                  class="btn btn-default">
             <span class="icon icon-back"></span>&nbsp;撤销
           </button>
-          <button class="btn btn-default">
+          <button v-on:click="redo" v-bind:disabled="!isRedo" v-bind:class="{ 'active': !isRedo }"
+                  class="btn btn-default">
             <span class="icon icon-forward"></span>&nbsp;重做
           </button>
         </div>
         <div class="btn-group">
-          <button v-on:click="show_create" class="btn btn-default">
+          <button v-on:click="showCreate" class="btn btn-default">
             <span class="icon icon-plus"></span>&nbsp;新建
           </button>
         </div>
@@ -38,12 +40,12 @@
     </header>
     <div class="window-content">
       <div class="pane-group">
-        <div class="pane-sm sidebar padded-more">
+        <div class="pane-sm sidebar padded-more" v-bind:style="{ display: mode === 'create' ? 'block' : 'none' }">
           <div>
             <div class="form-group">
               <div>
                 <label>新建文件夹</label>
-                <button v-on:click="create_dir" type="button" class="btn btn-mini btn-default" style="float: right;">
+                <button v-on:click="createDir" type="button" class="btn btn-mini btn-default" style="float: right;">
                   新建
                 </button>
               </div>
@@ -52,7 +54,7 @@
             <div class="form-group">
               <div>
                 <label>新建文件</label>
-                <button v-on:click="create_reg_file" type="button" class="btn btn-mini btn-default"
+                <button v-on:click="createRegFile" type="button" class="btn btn-mini btn-default"
                         style="float: right;">新建
                 </button>
               </div>
@@ -61,7 +63,7 @@
             <div class="form-group">
               <div>
                 <label>导入文件</label>
-                <button v-on:click="import_file" type="button" class="btn btn-mini btn-default" style="float: right;">
+                <button v-on:click="importFile" type="button" class="btn btn-mini btn-default" style="float: right;">
                   导入
                 </button>
               </div>
@@ -103,7 +105,7 @@
             </div>
             <div class="form-actions">
               <button v-on:click="close_rename" type="button" class="btn btn-form btn-default">关闭</button>
-              <button v-on:click="rename_file" type="button" class="btn btn-form btn-primary">重命名</button>
+              <button v-on:click="renameFile" type="button" class="btn btn-form btn-primary">重命名</button>
             </div>
           </div>
         </div>
@@ -144,7 +146,7 @@
       VDevice.initial('native')
       // debug
       this.commandManager = VDevice.getCommandManager()
-      this.cd('/')
+      this.cd('/Users/Yezersky')
 
       /*
        try {
@@ -164,10 +166,6 @@
         currentPath: '/',
         files: [],
 
-        isBack: false,
-        isForward: false,
-
-        // debug
         commandManager: null,
 
         // old
@@ -195,24 +193,45 @@
       }
     },
 
+    computed: {
+      isBack () {
+        return this.commandManager ? this.commandManager.isBack() : false
+      },
+      isForward () {
+        return this.commandManager ? this.commandManager.isForward() : false
+      },
+      isUndo () {
+        return this.commandManager ? this.commandManager.isUndo() : false
+      },
+      isRedo () {
+        return this.commandManager ? this.commandManager.isRedo() : false
+      }
+    },
+
     methods: {
       cd (pathStr) {
         var command = VDevice.getCommandManager()
         command.cd(pathStr, this._cdCallback)
       },
+      refresh () {
+        VDevice.getCommandManager().refresh(this._cdCallback)
+      },
       _cdCallback (err, files, currentPath) {
         if (err) return
         this.files = files
         this.currentPath = currentPath
-        var command = VDevice.getCommandManager()
-        this.isBack = command.isBack()
-        this.isForward = command.isForward()
       },
       back () {
         VDevice.getCommandManager().back(this._cdCallback)
       },
       forward () {
         VDevice.getCommandManager().forward(this._cdCallback)
+      },
+      undo () {
+        VDevice.getCommandManager().undo()
+      },
+      redo () {
+        VDevice.getCommandManager().redo()
       },
 
       /**
@@ -299,7 +318,7 @@
        * @deprecated temporary
        */
       openRename (file) {
-        this.file_name = path.basename(file)
+        this.file_name = file
         this.file_name_rename = ''
         this.mode = 'rename'
       },
@@ -307,15 +326,90 @@
        * @deprecated temporary
        */
       renameFile () {
-        try {
-          vfs_old.rename_file(this.file_name_rename, this.file_inode, this.inode_index)
-          this.close_rename()
-          this.refresh()
-        } catch (e) {
-          dialog.showMessageBox({buttons: ['好的'], message: e.toString()})
+        VDevice.getCommandManager().execute({
+          method: 'rename',
+          args: [
+            this.file_name,
+            path.join(path.dirname(this.file_name), this.file_name_rename)
+          ],
+          callback: (err) => {
+            if (err) return
+            this.refresh()
+          }
+        })
+      },
+      /**
+       * @deprecated temporary
+       */
+      showCreate () {
+        if (this.mode === 'create') {
+          this.mode = ''
+        } else {
+          this.mode = 'create'
         }
       },
-
+      /**
+       * @deprecated temporary
+       */
+      createDir () {
+        VDevice.getCommandManager().execute({
+          method: 'createDir',
+          args: [
+            path.join(this.currentPath, this.new_dir_name)
+          ],
+          callback: (err) => {
+            if (err) return
+            this.refresh()
+          }
+        })
+      },
+      /**
+       * @deprecated temporary
+       */
+      createRegFile () {
+        VDevice.getCommandManager().execute({
+          method: 'createFile',
+          args: [
+            path.join(this.currentPath, this.new_file_name)
+          ],
+          callback: (err) => {
+            if (err) return
+            this.refresh()
+          }
+        })
+      },
+      /**
+       * @deprecated temporary
+       */
+      importFile () {
+        dialog.showOpenDialog({
+          properties: ['openFile']
+        }, function (files) {
+          files.forEach(this.importLocalFile)
+        }.bind(this))
+      },
+      /**
+       * @deprecated since version 0.2.0
+       */
+      importLocalFile (file_path) {
+        fs.readFile(file_path, (err, data) => {
+          if (err) {
+            dialog.showMessageBox({buttons: ['好的'], message: err.toString()})
+            return
+          }
+          VDevice.getCommandManager().execute({
+            method: 'writeFile',
+            args: [
+              path.join(this.currentPath, path.basename(file_path)),
+              data
+            ],
+            callback: (err) => {
+              if (err) return
+              this.refresh()
+            }
+          })
+        })
+      },
 
       // old
       /**
@@ -344,7 +438,7 @@
       /**
        * @deprecated
        */
-      refresh () {
+      refreshOld () {
         this.read_dir(this.inode_index)
       },
       /**
@@ -393,7 +487,7 @@
         try {
           vfs_old.create_dir(this.new_dir_name, this.inode_index)
           this.new_dir_name = ''
-          this.refresh()
+          this.refreshOld()
         } catch (e) {
           dialog.showMessageBox({buttons: ['好的'], message: e.toString()})
         }
@@ -405,7 +499,7 @@
         try {
           vfs_old.create_reg_file(null, this.new_file_name, this.inode_index)
           this.new_file_name = ''
-          this.refresh()
+          this.refreshOld()
         } catch (e) {
           dialog.showMessageBox({buttons: ['好的'], message: e.toString()})
         }
@@ -429,7 +523,7 @@
             if (err) return dialog.showMessageBox({buttons: ['好的'], message: err.toString()})
             var file_name = path.parse(file_path).base
             vfs_old.create_reg_file(data, file_name, this.inode_index)
-            this.refresh()
+            this.refreshOld()
           } catch (e) {
             dialog.showMessageBox({buttons: ['好的'], message: e.toString()})
           }
@@ -467,7 +561,7 @@
        */
       remove_file (item) {
         vfs_old.remove_file(item.inode, this.inode_index)
-        this.refresh()
+        this.refreshOld()
       },
       /**
        * @deprecated since version 0.2.0
@@ -562,7 +656,7 @@
       save_file_text () {
         vfs_old.update_file(Buffer.from(this.file_text), this.file_inode)
         this.close_file()
-        this.refresh()
+        this.refreshOld()
         dialog.showMessageBox({buttons: ['好的'], message: '保存成功'})
       },
       /**
@@ -581,7 +675,7 @@
         try {
           vfs_old.rename_file(this.file_name_rename, this.file_inode, this.inode_index)
           this.close_rename()
-          this.refresh()
+          this.refreshOld()
         } catch (e) {
           dialog.showMessageBox({buttons: ['好的'], message: e.toString()})
         }
@@ -631,8 +725,12 @@
         }
       },
       renameMsg (msg) {
+        this.openRename(msg.file)
       },
       removeMsg (msg) {
+      },
+      refreshMsg (msg) {
+        this.refresh()
       }
     },
 

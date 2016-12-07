@@ -8,6 +8,18 @@ export default class FSUnix extends FSInterface {
     super()
     this._type = 'unix'
   }
+  
+  createFile(file, callback) {
+    this.writeFile(file, '', callback)
+  }
+
+  createFileUndo(file, callback) {
+    this.rmFile(file, callback)
+  }
+  
+  rmFile(file, callback) {
+    fs.unlink(file, callback)
+  }
 
   writeFile(file, data, callback) {
     fs.writeFile(file, data, callback)
@@ -15,6 +27,18 @@ export default class FSUnix extends FSInterface {
 
   readFile(file, callback) {
     fs.readFile(file, callback)
+  }
+
+  createDir(file, callback) {
+    fs.mkdir(file, callback)
+  }
+
+  createDirUndo(file, callback) {
+    this.rmDir(file, callback)
+  }
+  
+  rmDir(file, callback) {
+    fs.rmdir(file, callback)
   }
 
   readDir(file, callback) {
@@ -45,6 +69,10 @@ export default class FSUnix extends FSInterface {
 
   rename(oldPath, newPath, callback) {
     fs.rename(oldPath, newPath, callback)
+  }
+  
+  renameUndo(oldPath, newPath, callback) {
+    fs.rename(newPath, oldPath, callback)
   }
 
   remove(file, callback) {

@@ -5,9 +5,10 @@ import FSUnix from './unix'
 /**
  * File System Factory
  * @param {String} type
+ * @param {Object} options
  * @returns {VFS}
  */
-function FSFactory (type) {
+function FSFactory (type, options) {
   var vfs = null
   switch (type) {
     case 'native':
