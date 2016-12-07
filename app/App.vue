@@ -22,6 +22,9 @@
                   class="btn btn-default">
             <span class="icon icon-forward"></span>&nbsp;重做
           </button>
+          <!--<test-component v-bind:params="params">-->
+
+          <!--</test-component>-->
         </div>
         <div class="btn-group">
           <button v-on:click="showCreate" class="btn btn-default">
@@ -92,7 +95,7 @@
 
 
         <!--文件预览-->
-        <preview v-bind:file_path.sync="file_path" v-bind:style="{display: file_path === '' ? 'none': 'block'}">
+        <preview v-bind:file_info.sync="file_info" v-bind:style="{display: file_info.path === '' ? 'none': 'block'}">
 
         </preview>
 
@@ -133,6 +136,7 @@
   import VDevice from './core/vDevice'
 
   import Preview from './component/Preview'
+  import TestComponent from './component/TestComponent'
 
   var fs_name = 'my-fs'
   var device = null
@@ -146,7 +150,7 @@
       VDevice.initial('native')
       // debug
       this.commandManager = VDevice.getCommandManager()
-      this.cd('/')
+      this.cd('/home')
 
       /*
        try {
@@ -165,7 +169,13 @@
       return {
         currentPath: '/',
         files: [],
-        file_path: '',
+
+        file_info: {
+          path: '',
+          name: '',
+          type: ''
+        },
+
         // debug
         commandManager: null,
 
@@ -190,7 +200,14 @@
         // 重命名
         file_name_rename: '',
         // 设备路径
-        device_path: path.join(userData, fs_name)
+        device_path: path.join(userData, fs_name),
+        // 测试
+//        params: 'zhangfeng'
+        params: {
+          name: 'zhang',
+          age: 20,
+          sex: 'male'
+        }
       }
     },
 
@@ -722,7 +739,9 @@
         var command = VDevice.getCommandManager()
         if (msg.isFile) {
           console.log('I have to log now')
-          this.file_path = msg.file
+          this.file_info.path = msg.file
+          this.file_info.type = mime.lookup(path.basename(msg.file)).split('/')[0]
+          this.file_info.name = path.basename(msg.file)
           console.log(msg.file)
           this.openFile(msg.file)
         } else if (msg.isDirectory) {
@@ -741,7 +760,8 @@
 
     components: {
       ItemComponent,
-      Preview
+      Preview,
+      TestComponent
     }
   }
 </script>

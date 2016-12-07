@@ -1,8 +1,8 @@
 <template xmlns:v-on="http://www.w3.org/1999/xhtml" xmlns:v-bind="http://www.w3.org/1999/xhtml">
-  <div class="pane sidebar padded-more" v-bind:style="{display: file_path === '' ? 'none' : 'block'}">
+  <div class="pane sidebar padded-more" v-bind:style="{display: file_info.path == '' ? 'none' : 'block'}" v-if="file_info.type == 'text'">
     <div>
       <div class="form-group">
-        <label>{{file_name}}</label>
+        <label>{{file_info.name}}</label>
         <textarea v-model="file_text" class="form-control" rows="5"></textarea>
       </div>
       <div class="form-actions">
@@ -21,26 +21,43 @@
   import path from 'path'
   import CommandManager from '../core/fs/commandManager'
 
+
+
   module.exports = {
-    props: ['file_name'],
+    props: ['file_info'],
     ready: function () {
-      this.mode = 'text'
     },
     data: function () {
       return {
-        mode: 'text',
-        file_name: '',
         file_text: 'test text file content',
         temp: ''
       }
     },
     computed: {
-
+      file_text: function () {
+        console.log('file path: ' + this.file_info.path)
+        var vd = VDevice.getCommandManager()
+        if (!vd) {
+          return
+        } else {
+          vd.execute({
+            method: 'readFile',
+            args: [this.file_info.path],
+            callback: (err, data) => {
+              if (err) return
+//              this.file_text = data.toString()
+              this.temp = data.toString()
+            }
+          })
+        }
+        return this.temp
+      }
     },
     methods: {
       close_file () {
-        this.file_path = ''
-        this.mode = ''
+        this.file_info.path = ''
+        this.file_info.type = ''
+        this.file_info.name = ''
       }
     }
   }

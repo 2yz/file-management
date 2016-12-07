@@ -1,9 +1,8 @@
 <template xmlns:v-bind="http://www.w3.org/1999/xhtml" xmlns:v-on="http://www.w3.org/1999/xhtml">
-  <div class="pane sidebar padded-more" v-bind:style="{display: file_path === '' ? 'none' : 'block'}">
+  <div class="pane sidebar padded-more" v-bind:style="{display: file_info.path == '' ? 'none' : 'block'}" v-if="file_info.type == 'image'">
     <div>
       <div class="form-group">
-        <label>{{file_name}}</label>
-        <span>{{text}}</span>
+        <label>{{file_info.name}}</label>
       </div>
       <div class="form-group">
         <img v-bind:src="file_image_src" style="width: 100%;"/>
@@ -25,34 +24,31 @@
   import mime from 'mime'
   import VDevice from '../core/vDevice'
   import path from 'path'
-  import CommandManager from '../core/fs/commandManager'
 
 
   module.exports = {
-    props: ['file_path'],
+    props: ['file_info'],
     ready: function () {
-      this.mode = 'image'
     },
     data: function () {
       return {
-        mode: 'image',
         file_name: '',
         temp: ''
       }
     },
     computed: {
       file_image_src: function () {
-        console.log('file path: ' + this.file_path)
+        console.log('file path: ' + this.file_info.path)
         var vd = VDevice.getCommandManager()
         if (!vd) {
           return
         } else {
           vd.execute({
             method: 'readFile',
-            args: [this.file_path],
+            args: [this.file_info.path],
             callback: (err, data) => {
               if (err) return
-              var arr = ['data:' + mime.lookup(this.file_path) + ';base64,']
+              var arr = ['data:' + mime.lookup(this.file_info.path) + ';base64,']
               arr.push(data.toString('base64'))
               this.temp = arr.join('')
             }
@@ -61,13 +57,17 @@
         return this.temp
       },
       file_name: function () {
-        return path.basename(this.file_path)
+        return path.basename(this.file_info.path)
+      },
+      mime_type: function () {
+        return mime.lookup(path.basename(this.file_info.path)).split('/')[0]
       }
     },
     methods: {
       close_file () {
-        this.file_path = ''
-        this.mode = ''
+        this.file_info.path = ''
+        this.file_info.type = ''
+        this.file_info.name = ''
       }
     }
   }
