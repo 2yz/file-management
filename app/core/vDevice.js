@@ -7,9 +7,9 @@ var VDevice = (function () {
   var m_commandMangager = null
 
   return {
-    initial(type) {
+    initial(type, options) {
       m_type = type
-      m_vfs = FSFactory(type)
+      m_vfs = FSFactory(type, options)
       m_commandMangager = new CommandManager(m_vfs)
     },
     getVFS() {
