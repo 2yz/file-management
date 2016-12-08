@@ -3,7 +3,7 @@
     <header class="toolbar toolbar-header">
       <div class="toolbar-actions">
         <div class="btn-group">
-          <button v-on:click="open_root_dir" class="btn btn-default">
+          <button v-on:click="openRootDir" class="btn btn-default">
             <span class="icon icon-home"></span>&nbsp;根目录
           </button>
           <button v-on:click="back" v-bind:disabled="!isBack" v-bind:class="{ 'active': !isBack }"
@@ -466,6 +466,9 @@
             }
           })
         })
+      },
+      openRootDir() {
+        this.cd('/')
       },
 
       // old

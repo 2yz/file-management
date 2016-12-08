@@ -7,6 +7,10 @@
   "main": "background.js",
   "dependencies": {
     "date-format": "0.0.2",
-    "mime": "^1.3.4"
+    "ftp": "^0.3.10",
+    "ftp-imp": "^2.2.33",
+    "jsftp": "^1.5.5",
+    "mime": "^1.3.4",
+    "parse-listing": "^1.1.3"
   }
 }

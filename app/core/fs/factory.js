@@ -1,6 +1,7 @@
 import VFS from './vfs'
 import FSDefault from './default'
 import FSUnix from './unix'
+import FSFtp from './ftp'
 
 /**
  * File System Factory
@@ -11,6 +12,9 @@ import FSUnix from './unix'
 function FSFactory (type, options) {
   var vfs = null
   switch (type) {
+    case 'ftp':
+      vfs = new FSFtp(options)
+      break
     case 'native':
       vfs = new FSUnix()
       break

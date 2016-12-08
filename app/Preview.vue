@@ -80,6 +80,7 @@
         </div>
       </div>
     </div>
+  </div>
 </template>
 
 
@@ -92,12 +93,13 @@
   import fs from 'fs'
   import path from 'path'
   import mime from 'mime'
-  import Device from './core/device'
+  import Device from './core/device_old'
   import VFS from './core/vfs_old'
   import FILE_TYPE from './core/const/file_type'
   import ImagePreview from './ImagePreview'
-  import TextPreview from './TextPreview'
-  import AudioPreview from './ImagePreview'
+
+  var TextPreview = {}
+  var AudioPreview = ImagePreview
 
   class FilePreview {
     preview() {
@@ -105,13 +107,13 @@
   }
 
   class TextPre extends FilePreview {
-    text = '';
+    // text = ''
     preview() {
     }
   }
 
   class ImagePre extends FilePreview {
-    image_src = '';
+    // image_src = ''
 
     preview() {
 
@@ -119,7 +121,7 @@
   }
 
   class AudioPre extends FilePreview {
-    audio_src = '';
+    // audio_src = ''
     preview() {
     }
   }
@@ -133,21 +135,21 @@
     get_preview(file_type) {
       switch (file_type) {
         case 'text':
-          var text_pre = new TextPre();
-          return text_pre;
+          var text_pre = new TextPre()
+          return text_pre
         case 'image':
-          return new ImagePre();
+          return new ImagePre()
         case 'audio':
-          return new AudioPre();
+          return new AudioPre()
         default:
-          return new RegFilePre();
+          return new RegFilePre()
       }
     }
   }
 
 
   module.exports = {
-    //来自父组件的数据（必要的）
+    // 来自父组件的数据（必要的）
     props: ['msg'],
     data: function () {
       return {
@@ -159,14 +161,14 @@
     methods: {
       init: function () {
 //        var factory = new FilePreviewFactory();
-        console.log(this.props);
+        console.log(this.props)
       }
     },
-    components: [
+    components: {
       TextPreview,
       ImagePreview,
       AudioPreview
-    ]
+    }
   }
 
 

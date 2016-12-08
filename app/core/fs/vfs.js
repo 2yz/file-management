@@ -7,7 +7,23 @@ export default class FSInterface {
     this._notImplementedError()
   }
 
+  rmFile() {
+    this._notImplementedError()
+  }
+
+  writeFile() {
+    this._notImplementedError()
+  }
+
   readFile() {
+    this._notImplementedError()
+  }
+
+  createDir() {
+    this._notImplementedError()
+  }
+
+  rmDir() {
     this._notImplementedError()
   }
 
@@ -24,6 +40,22 @@ export default class FSInterface {
   }
 
   readDir() {
+    this._notImplementedError()
+  }
+
+  stat() {
+    this._notImplementedError()
+  }
+
+  rename() {
+    this._notImplementedError()
+  }
+
+  remove() {
+    this._notImplementedError()
+  }
+
+  reloadDir() {
     this._notImplementedError()
   }
 
