@@ -130,7 +130,7 @@
   import FSFactory from './core/fs/factory'
   import VDevice from './core/vDevice'
 
-  import ItemComponent from './component/item'
+  import ItemComponent from './component/ItemComponent'
   import Preview from './component/Preview'
 
   var fs_name = 'my-fs'
