@@ -9,7 +9,6 @@
       </div>
       <div class="form-actions">
         <button v-on:click="close_file" type="button" class="btn btn-form btn-default">关闭</button>
-        <!--<button v-on:click="export_file" type="button" class="btn btn-form btn-default">导出</button>-->
       </div>
     </div>
   </div>

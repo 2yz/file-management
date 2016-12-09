@@ -7,7 +7,6 @@
       </div>
       <div class="form-actions">
         <button v-on:click="close_file" type="button" class="btn btn-form btn-default">关闭</button>
-        <button v-on:click="export_file" type="button" class="btn btn-form btn-default">导出</button>
         <button v-on:click="save_file_text" type="button" class="btn btn-form btn-primary">保存</button>
       </div>
     </div>
@@ -20,8 +19,6 @@
   import VDevice from '../core/vDevice'
   import path from 'path'
   import CommandManager from '../core/fs/commandManager'
-
-
 
   module.exports = {
     props: ['file_info'],
@@ -58,6 +55,9 @@
         this.file_info.path = ''
         this.file_info.type = ''
         this.file_info.name = ''
+      },
+      save_file_text () {
+
       }
     }
   }

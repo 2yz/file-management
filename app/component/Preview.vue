@@ -1,15 +1,19 @@
 <template xmlns:v-on="http://www.w3.org/1999/xhtml" xmlns:v-bind="http://www.w3.org/1999/xhtml">
-  <image-preview v-bind:file_info.sync="file_info" v-bind:style="{ display: file_info.type === 'image' ? 'block' : 'none' }" >
+  <image-preview v-bind:file_info.sync="file_info" v-if="file_info.type === 'image'">
 
   </image-preview>
 
-  <text-preview v-bind:file_info.sync="file_info" v-bind:style="{ display: file_info.type === 'text' ? 'block' : 'none' }" >
+  <text-preview v-bind:file_info.sync="file_info" v-if="file_info.type === 'text'">
 
   </text-preview>
 
-  <!--<audio-preview v-bind:file_info.sync="file_info" v-bind:style="{ display: file_info.type === 'audio' ? 'block' : 'none' }" >-->
+  <audio-preview v-bind:file_info.sync="file_info" v-if="file_info.type === 'audio'">
 
-  <!--</audio-preview>-->
+  </audio-preview>
+
+  <regular-preview v-bind:file_info.sync="file_info" v-if="file_info.type === 'application'">
+
+  </regular-preview>
 </template>
 
 
@@ -27,10 +31,9 @@
   import ImagePreview from './ImagePreview'
   import TextPreview from './TextPreview'
   import AudioPreview from './AudioPreview'
+  import RegularPreview from './RegularPreview'
 
-
-
-  module.exports = {
+  export default {
     props: ['file_info'],
     ready: function () {
     },
@@ -47,9 +50,9 @@
     components: {
       TextPreview,
       ImagePreview,
-      AudioPreview
+      AudioPreview,
+      RegularPreview
     }
   }
-
 
 </script>

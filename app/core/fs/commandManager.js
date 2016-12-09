@@ -103,20 +103,7 @@ class FSCommand {
   }
 
   cd(path, callback) {
-    this.vfs.readDir(path, function (err) {
-      if (!err) {
-        if (this.currentPath) {
-          this.backStack.push(this.currentPath)
-          if (this.forwardStack.length > 0) {
-            this.forwardStack = []
-          }
-        }
-        this.currentPath = path
-      }
-      if (callback) {
-        callback.apply(callback, arguments)
-      }
-    }.bind(this))
+    this.vfs.readDir(path, callback)
   }
 
   refresh(callback) {
@@ -142,25 +129,6 @@ class FSCommand {
     }.bind(this))
   }
 
-  forward(callback) {
-    if (this.forwardStack.length === 0) {
-      callback(new Error('cannot forward!'))
-      return
-    }
-    var path = this.forwardStack.pop()
-    this.vfs.readDir(path, function (err) {
-      if (!err) {
-        if (this.currentPath) {
-          this.backStack.push(this.currentPath)
-        }
-        this.currentPath = path
-      }
-      if (callback) {
-        callback.apply(callback, arguments)
-      }
-    }.bind(this))
-  }
-
   isBack() {
     return this.backStack.length > 0
   }
@@ -168,6 +136,10 @@ class FSCommand {
   isForward() {
     return this.forwardStack.length > 0
   }
+
+  // readDir() {
+  //
+  // }
 
 }
 

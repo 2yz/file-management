@@ -4,7 +4,7 @@
       <div class="toolbar-actions">
         <div class="btn-group">
           <button v-on:click="open_root_dir" class="btn btn-default">
-            <span class="icon icon-home"></span>&nbsp;根目录
+            <span class="icon icon-home"></span>根目录
           </button>
           <button v-on:click="back" v-bind:disabled="!isBack" v-bind:class="{ 'active': !isBack }"
                   class="btn btn-default">
@@ -22,9 +22,6 @@
                   class="btn btn-default">
             <span class="icon icon-forward"></span>&nbsp;重做
           </button>
-          <!--<test-component v-bind:params="params">-->
-
-          <!--</test-component>-->
         </div>
         <div class="btn-group">
           <button v-on:click="showCreate" class="btn btn-default">
@@ -95,7 +92,7 @@
 
 
         <!--文件预览-->
-        <preview v-bind:file_info.sync="file_info" v-bind:style="{display: file_info.path === '' ? 'none': 'block'}">
+        <preview v-bind:file_info.sync="file_info" v-if="file_info.path !== ''">
 
         </preview>
 
@@ -130,27 +127,26 @@
   import FILE_TYPE from './core/const/file_type'
   const {app, dialog} = require('electron').remote
 
-  import ItemComponent from './component/item'
-
   import FSFactory from './core/fs/factory'
   import VDevice from './core/vDevice'
 
+  import ItemComponent from './component/item'
   import Preview from './component/Preview'
-  import TestComponent from './component/TestComponent'
+
+  var commandManager = null
 
   var fs_name = 'my-fs'
   var device = null
   var vfs_old = null
   var userData = app.getPath('userData')
 
-
-
   export default {
     ready () {
       VDevice.initial('native')
+
       // debug
       this.commandManager = VDevice.getCommandManager()
-      this.cd('/home')
+      this.cd('/')
 
       /*
        try {
@@ -168,6 +164,7 @@
     data () {
       return {
         currentPath: '/',
+        pathArr: [],
         files: [],
 
         file_info: {
@@ -297,6 +294,7 @@
             this.file_text = data.toString()
           }
         })
+//        this.file_text = vfs_old.read_file(item.inode).toString()
         this.mode = 'text'
       },
       /**
@@ -315,6 +313,9 @@
             this.file_image_src = arr.join('')
           }
         })
+//        var arr = ['data:' + item.mime_type + ';base64,']
+//        arr.push(vfs_old.read_file(item.inode).toString('base64'))
+//        this.file_image_src = arr.join('')
       },
       /**
        * @deprecated temporary
@@ -332,6 +333,9 @@
             this.file_audio_src = arr.join('')
           }
         })
+//        var arr = ['data:' + item.mime_type + ';base64,']
+//        arr.push(vfs_old.read_file(item.inode).toString('base64'))
+//        this.file_audio_src = arr.join('')
       },
       /**
        * @deprecated temporary
@@ -760,8 +764,7 @@
 
     components: {
       ItemComponent,
-      Preview,
-      TestComponent
+      Preview
     }
   }
 </script>
