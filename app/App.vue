@@ -116,7 +116,7 @@
             <div class="form-actions">
               <button v-on:click="close_file" type="button" class="btn btn-form btn-default">关闭</button>
               <!--<button v-on:click="export_file" type="button" class="btn btn-form btn-default">导出</button>-->
-              <!--<button v-on:click="save_file_text" type="button" class="btn btn-form btn-primary">保存</button>-->
+              <button v-on:click="saveFileText" type="button" class="btn btn-form btn-primary">保存</button>
             </div>
           </div>
         </div>
@@ -225,6 +225,8 @@
 
         commandManager: null,
 
+        // temp
+        file_path: '',
         // old
         inode_index: 0,
         items: [],
@@ -291,10 +293,25 @@
         VDevice.getCommandManager().redo()
       },
 
+
+      /**
+       * @deprecated temporary
+       */
+      saveFileText () {
+        VDevice.getCommandManager().execute({
+          method: 'writeFile',
+          args: [this.file_path, this.file_text],
+          callback: (err, data) => {
+            if (err) return
+            dialog.showMessageBox({buttons: ['好的'], message: '保存成功'})
+          }
+        })
+      },
       /**
        * @deprecated temporary
        */
       openFile (file) {
+        this.file_path = file
         var mimeType = mime.lookup(file)
         try {
           switch (mimeType.split('/')[0]) {
