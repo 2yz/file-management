@@ -26,7 +26,6 @@
   import fs from 'fs'
   import path from 'path'
   import mime from 'mime'
-  import VFS from '../core/vfs_old'
   import FILE_TYPE from '../core/const/file_type'
   import ImagePreview from './ImagePreview'
   import TextPreview from './TextPreview'
