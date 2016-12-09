@@ -1,5 +1,6 @@
 <template xmlns:v-on="http://www.w3.org/1999/xhtml" xmlns:v-bind="http://www.w3.org/1999/xhtml">
-  <div class="pane sidebar padded-more" v-bind:style="{display: file_info.path == '' ? 'none' : 'block'}" v-if="file_info.type == 'text'">
+  <div class="pane sidebar padded-more" v-bind:style="{display: file_info.path == '' ? 'none' : 'block'}"
+       v-if="file_info.type == 'text'">
     <div>
       <div class="form-group">
         <label>{{file_info.name}}</label>
@@ -13,16 +14,18 @@
   </div>
 </template>
 
-<script>
-
+<script type="text/ecmascript-6">
   import mime from 'mime'
   import VDevice from '../core/vDevice'
   import path from 'path'
   import CommandManager from '../core/fs/commandManager'
 
+  const {app, dialog} = require('electron').remote
+
   module.exports = {
     props: ['file_info'],
-    ready: function () {
+    ready () {
+      this.init()
     },
     data: function () {
       return {
@@ -30,34 +33,38 @@
         temp: ''
       }
     },
-    computed: {
-      file_text: function () {
-        console.log('file path: ' + this.file_info.path)
-        var vd = VDevice.getCommandManager()
-        if (!vd) {
-          return
-        } else {
-          vd.execute({
-            method: 'readFile',
-            args: [this.file_info.path],
-            callback: (err, data) => {
-              if (err) return
-//              this.file_text = data.toString()
-              this.temp = data.toString()
-            }
-          })
-        }
-        return this.temp
+    events: {
+      refresh () {
+        this.init()
       }
     },
     methods: {
+      init () {
+        var vd = VDevice.getCommandManager()
+        if (!vd) return
+        vd.execute({
+          method: 'readFile',
+          args: [this.file_info.path],
+          callback: (err, data) => {
+            if (err) return
+            this.file_text = data.toString()
+          }
+        })
+      },
       close_file () {
-        this.file_info.path = ''
-        this.file_info.type = ''
-        this.file_info.name = ''
+        this.$dispatch('closePreview')
       },
       save_file_text () {
-
+        var vd = VDevice.getCommandManager()
+        if (!vd) return
+        vd.execute({
+          method: 'writeFile',
+          args: [this.file_info.path, this.file_text],
+          callback: (err, data) => {
+            if (err) return
+            dialog.showMessageBox({buttons: ['好的'], message: '保存成功'})
+          }
+        })
       }
     }
   }

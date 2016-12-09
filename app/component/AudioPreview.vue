@@ -5,7 +5,7 @@
         <label>{{file_info.name}}</label>
       </div>
       <div class="form-group">
-        <audio v-bind:src="file_audio_src" controls="controls"></audio>
+        <audio v-bind:src="file_audio_src" controls="controls" autoplay="autoplay"></audio>
       </div>
       <div class="form-actions">
         <button v-on:click="close_file" type="button" class="btn btn-form btn-default">关闭</button>
@@ -14,7 +14,7 @@
   </div>
 </template>
 
-<script>
+<script type="text/ecmascript-6">
 
   import mime from 'mime'
   import VDevice from '../core/vDevice'
@@ -22,38 +22,36 @@
 
   module.exports = {
     props: ['file_info'],
-    computed: {
-      file_audio_src: function () {
-        console.log('file path: ' + this.file_info.path)
-        var vd = VDevice.getCommandManager()
-        if (!vd) {
-          return
-        } else {
-          vd.execute({
-            method: 'readFile',
-            args: [this.file_info.path],
-            callback: (err, data) => {
-              if (err) return
-              var arr = ['data:' + mime.lookup(this.file_info.path) + ';base64,']
-              arr.push(data.toString('base64'))
-              this.temp = arr.join('')
-            }
-          })
-        }
-        return this.temp
-      }
+    ready () {
+      this.init()
     },
     data: function () {
       return {
-        file_audio_src: '',
-        temp: ''
+        file_audio_src: ''
+      }
+    },
+    events: {
+      refresh () {
+        this.init()
       }
     },
     methods: {
+      init () {
+        var vd = VDevice.getCommandManager()
+        if (!vd) return
+        vd.execute({
+          method: 'readFile',
+          args: [this.file_info.path],
+          callback: (err, data) => {
+            if (err) return
+            var arr = ['data:' + mime.lookup(this.file_info.path) + ';base64,']
+            arr.push(data.toString('base64'))
+            this.file_audio_src = arr.join('')
+          }
+        })
+      },
       close_file () {
-        this.file_info.path = ''
-        this.file_info.type = ''
-        this.file_info.name = ''
+        this.$dispatch('closePreview')
       }
     }
   }

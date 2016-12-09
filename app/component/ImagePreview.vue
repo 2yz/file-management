@@ -18,55 +18,43 @@
 
 </style>
 
-<script>
-
+<script type="text/ecmascript-6">
   import mime from 'mime'
   import VDevice from '../core/vDevice'
   import path from 'path'
 
-
   module.exports = {
     props: ['file_info'],
-    ready: function () {
+    ready () {
+      this.init()
     },
-    data: function () {
+    data () {
       return {
-        file_name: '',
-        temp: ''
+        file_image_src: ''
       }
     },
-    computed: {
-      file_image_src: function () {
-        console.log('file path: ' + this.file_info.path)
-        var vd = VDevice.getCommandManager()
-        if (!vd) {
-          return
-        } else {
-          vd.execute({
-            method: 'readFile',
-            args: [this.file_info.path],
-            callback: (err, data) => {
-              if (err) return
-              var arr = ['data:' + mime.lookup(this.file_info.path) + ';base64,']
-              arr.push(data.toString('base64'))
-              this.temp = arr.join('')
-            }
-          })
-        }
-        return this.temp
-      },
-      file_name: function () {
-        return path.basename(this.file_info.path)
-      },
-      mime_type: function () {
-        return mime.lookup(path.basename(this.file_info.path)).split('/')[0]
+    events: {
+      refresh () {
+        this.init()
       }
     },
     methods: {
+      init () {
+        var vd = VDevice.getCommandManager()
+        if (!vd) return
+        vd.execute({
+          method: 'readFile',
+          args: [this.file_info.path],
+          callback: (err, data) => {
+            if (err) return
+            var arr = ['data:' + mime.lookup(this.file_info.path) + ';base64,']
+            arr.push(data.toString('base64'))
+            this.file_image_src = arr.join('')
+          }
+        })
+      },
       close_file () {
-        this.file_info.path = ''
-        this.file_info.type = ''
-        this.file_info.name = ''
+        this.$dispatch('closePreview')
       }
     }
   }

@@ -92,9 +92,7 @@
 
 
         <!--文件预览-->
-        <preview v-bind:file_info.sync="file_info" v-if="file_info.path !== ''">
-
-        </preview>
+        <preview></preview>
 
         <!--重命名-->
         <div class="pane-sm sidebar padded-more" v-bind:style="{ display: mode === 'rename' ? 'block' : 'none' }">
@@ -742,10 +740,7 @@
       openMsg (msg) {
         var command = VDevice.getCommandManager()
         if (msg.isFile) {
-          this.file_info.path = msg.file
-          this.file_info.type = mime.lookup(path.basename(msg.file)).split('/')[0]
-          this.file_info.name = path.basename(msg.file)
-          this.openFile(msg.file)
+          this.$broadcast('openPreview', msg)
         } else if (msg.isDirectory) {
           this.cd(msg.file)
         }

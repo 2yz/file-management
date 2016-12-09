@@ -19,18 +19,9 @@
 
   module.exports = {
     props: ['file_info'],
-    computed: {
-    },
-    data: function () {
-      return {
-        temp: ''
-      }
-    },
     methods: {
       close_file () {
-        this.file_info.path = ''
-        this.file_info.type = ''
-        this.file_info.name = ''
+        this.$dispatch('closePreview')
       }
     }
   }
