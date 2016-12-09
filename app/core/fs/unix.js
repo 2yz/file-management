@@ -2,7 +2,6 @@ import fs from 'fs'
 import path from 'path'
 import FSInterface from './vfs'
 
-
 export default class FSUnix extends FSInterface {
   constructor() {
     super()
@@ -21,12 +20,12 @@ export default class FSUnix extends FSInterface {
     fs.unlink(file, callback)
   }
 
-  writeFile(file, data, callback) {
-    fs.writeFile(file, data, callback)
+  writeFile(path, data, callback) {
+    fs.writeFile(path, data, callback)
   }
 
-  readFile(file, callback) {
-    fs.readFile(file, callback)
+  readFile(path, callback) {
+    fs.readFile(path, callback)
   }
 
   createDir(file, callback) {
@@ -50,8 +49,8 @@ export default class FSUnix extends FSInterface {
     })
   }
 
-  stat(file, callback) {
-    fs.stat(file, (err, stats) => {
+  stat(path, callback) {
+    fs.stat(path, (err, stats) => {
       if (err) {
         callback(err, null)
         return
@@ -75,22 +74,22 @@ export default class FSUnix extends FSInterface {
     fs.rename(newPath, oldPath, callback)
   }
 
-  remove(file, callback) {
-    fs.stat(file, (err, stats) => {
+  remove(path, callback) {
+    fs.stat(path, (err, stats) => {
       if (err) {
         callback(err, null)
         return
       }
       if (stats.isFile()) {
-        fs.unlink(file, callback)
+        fs.unlink(path, callback)
       } else if (stats.isDirectory()) {
-        fs.rmdir(file, callback)
+        fs.rmdir(path, callback)
       }
     })
   }
 
-  reloadDir(file, callback) {
-    this.readDir(file, callback)
+  reloadDir(path, callback) {
+    this.readDir(path, callback)
   }
 
   _resolveFileType(mode) {

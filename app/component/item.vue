@@ -26,7 +26,7 @@
 <script type="text/ecmascript-6">
   import path from 'path'
   import mime from 'mime'
-  import VDevice from '../core/vdevice'
+  import VDevice from '../core/vDevice'
 
   export default {
     props: ['file'],

@@ -91,67 +91,10 @@
         </div>
 
 
-        <!--将一下替换为-->
-        <!--<preview v-bind:msg.sync="{'mode': mode, 'free_size': free_size, 'file_inode': file_inode}"></preview>-->
-        <!--文件-->
-        <div class="pane-sm sidebar padded-more" v-bind:style="{ display: mode === 'file' ? 'block' : 'none' }">
-          <div>
-            <div class="form-group">
-              <label>{{file_name}}</label>
-            </div>
-            <div class="form-actions">
-              <button v-on:click="close_file" type="button" class="btn btn-form btn-default">关闭</button>
-              <!--<button v-on:click="export_file" type="button" class="btn btn-form btn-default">导出</button>-->
-            </div>
-          </div>
-        </div>
+        <!--文件预览-->
+        <preview v-bind:file_info.sync="file_info" v-if="file_info.path !== ''">
 
-        <!--文本-->
-        <div class="pane sidebar padded-more" v-bind:style="{ display: mode === 'text' ? 'block' : 'none' }">
-          <div>
-            <div class="form-group">
-              <label>{{file_name}}</label>
-              <textarea v-model="file_text" class="form-control" rows="5"></textarea>
-            </div>
-            <div class="form-actions">
-              <button v-on:click="close_file" type="button" class="btn btn-form btn-default">关闭</button>
-              <!--<button v-on:click="export_file" type="button" class="btn btn-form btn-default">导出</button>-->
-              <button v-on:click="saveFileText" type="button" class="btn btn-form btn-primary">保存</button>
-            </div>
-          </div>
-        </div>
-
-        <!--图片-->
-        <div class="pane sidebar padded-more" v-bind:style="{ display: mode === 'image' ? 'block' : 'none' }">
-          <div>
-            <div class="form-group">
-              <label>{{file_name}}</label>
-            </div>
-            <div class="form-group">
-              <img v-bind:src="file_image_src" style="width: 100%;"/>
-            </div>
-            <div class="form-actions">
-              <button v-on:click="close_file" type="button" class="btn btn-form btn-default">关闭</button>
-              <!--<button v-on:click="export_file" type="button" class="btn btn-form btn-default">导出</button>-->
-            </div>
-          </div>
-        </div>
-
-        <!--音频-->
-        <div class="pane sidebar padded-more" v-bind:style="{ display: mode === 'audio' ? 'block' : 'none' }">
-          <div>
-            <div class="form-group">
-              <label>{{file_name}}</label>
-            </div>
-            <div class="form-group">
-              <audio v-bind:src="file_audio_src" controls="controls"></audio>
-            </div>
-            <div class="form-actions">
-              <button v-on:click="close_file" type="button" class="btn btn-form btn-default">关闭</button>
-              <!--<button v-on:click="export_file" type="button" class="btn btn-form btn-default">导出</button>-->
-            </div>
-          </div>
-        </div>
+        </preview>
 
         <!--重命名-->
         <div class="pane-sm sidebar padded-more" v-bind:style="{ display: mode === 'rename' ? 'block' : 'none' }">
@@ -184,26 +127,24 @@
   import FILE_TYPE from './core/const/file_type'
   const {app, dialog} = require('electron').remote
 
-  import ItemComponent from './component/item'
-
   import FSFactory from './core/fs/factory'
-  import VDevice from './core/vdevice'
+  import VDevice from './core/vDevice'
 
-  // import Preview from './Preview'
+  import ItemComponent from './component/item'
+  import Preview from './component/Preview'
 
   var fs_name = 'my-fs'
   var device = null
   var vfs_old = null
   var userData = app.getPath('userData')
 
-
-
   export default {
     ready () {
       VDevice.initial('native')
+
       // debug
       this.commandManager = VDevice.getCommandManager()
-      this.cd('/Users/Yezersky')
+      this.cd('/')
 
       /*
        try {
@@ -223,10 +164,15 @@
         currentPath: '/',
         files: [],
 
+        file_info: {
+          path: '',
+          name: '',
+          type: ''
+        },
+
+        // debug
         commandManager: null,
 
-        // temp
-        file_path: '',
         // old
         inode_index: 0,
         items: [],
@@ -796,6 +742,9 @@
       openMsg (msg) {
         var command = VDevice.getCommandManager()
         if (msg.isFile) {
+          this.file_info.path = msg.file
+          this.file_info.type = mime.lookup(path.basename(msg.file)).split('/')[0]
+          this.file_info.name = path.basename(msg.file)
           this.openFile(msg.file)
         } else if (msg.isDirectory) {
           this.cd(msg.file)
@@ -812,8 +761,8 @@
     },
 
     components: {
-      ItemComponent
-      // Preview
+      ItemComponent,
+      Preview
     }
   }
 </script>

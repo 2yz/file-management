@@ -4,13 +4,11 @@
     <inspection_tool class="HtmlUnknownAttribute" enabled="true" level="WARNING" enabled_by_default="true">
       <option name="myValues">
         <value>
-          <list size="6">
+          <list size="4">
             <item index="0" class="java.lang.String" itemvalue="v-on:click" />
             <item index="1" class="java.lang.String" itemvalue="v-bind:style" />
             <item index="2" class="java.lang.String" itemvalue="v-bind:src" />
             <item index="3" class="java.lang.String" itemvalue="v-on:dblclick" />
-            <item index="4" class="java.lang.String" itemvalue="v-bind:disabled" />
-            <item index="5" class="java.lang.String" itemvalue="v-bind:class" />
           </list>
         </value>
       </option>
