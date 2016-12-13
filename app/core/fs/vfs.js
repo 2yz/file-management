@@ -3,16 +3,6 @@ export default class FSInterface {
     this._type = 'vfs'
   }
 
-  /**
-   * Excute Command
-   * @param {Object} command - Command Object
-   * @param {string} command.method - Command Method
-   * @param {string[]} command.args - Command Args Array
-   */
-  execute(command) {
-
-  }
-
   createFile() {
     this._notImplementedError()
   }
