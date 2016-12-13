@@ -27,6 +27,10 @@ export default class FSInterface {
     this._notImplementedError()
   }
 
+  isUndoAble(method) {
+    return this[method + 'Undo'] !== undefined
+  }
+
   _notImplementedError() {
     throw new Error('Not Implemented Error!')
   }
