@@ -184,7 +184,7 @@
   import path from 'path'
   import mime from 'mime'
   import Device from './core/device'
-  import VFS from './core/vfs'
+  import VFS from './core/vfs_old'
   import FILE_TYPE from './core/const/file_type'
   const {app, dialog} = require('electron').remote
 
