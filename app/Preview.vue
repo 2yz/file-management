@@ -22,61 +22,64 @@
     <div>
       <div class="form-group">
         <label>{{file_name}}</label>
-        <textarea v-model="file_text" class="form-control" rows="5"></textarea>
-      </div>
-      <div class="form-actions">
-        <button type="button" class="btn btn-form btn-default">关闭</button>
-        <button type="button" class="btn btn-form btn-default">导出</button>
-        <button type="button" class="btn btn-form btn-primary">保存</button>
+        <!--将这里替换成另一个组件-->
+        <div class="form-actions">
+          <button type="button" class="btn btn-form btn-default">关闭</button>
+          <button type="button" class="btn btn-form btn-default">导出</button>
+          <button type="button" class="btn btn-form btn-primary">保存</button>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!--图片-->
-  <div class="pane sidebar padded-more" v-bind:style="{ display: mode === 'image' ? 'block' : 'none' }">
-    <div>
-      <div class="form-group">
-        <label>{{file_name}}</label>
-      </div>
-      <div class="form-group">
-        <img v-bind:src="file_image_src" style="width: 100%;"/>
-      </div>
-      <div class="form-actions">
-        <button class="btn btn-form btn-default">关闭</button>
-        <button class="btn btn-form btn-default">导出</button>
-      </div>
-    </div>
-  </div>
+    <!--图片-->
+    <div class="pane sidebar padded-more" v-bind:style="{ display: mode === 'image' ? 'block' : 'none' }">
+      <div>
+        <div class="form-group">
+          <label>{{file_name}}</label>
+        </div>
+        <div class="form-group">
+          <!--将这里替换成另一个组件-->
+          <ImagePreview>
 
-  <!--音频-->
-  <div class="pane sidebar padded-more" v-bind:style="{ display: mode === 'audio' ? 'block' : 'none' }">
-    <div>
-      <div class="form-group">
-        <label>{{file_name}}</label>
-      </div>
-      <div class="form-group">
-        <audio v-bind:src="file_audio_src" controls="controls"></audio>
-      </div>
-      <div class="form-actions">
-        <button type="button" class="btn btn-form btn-default">关闭</button>
-        <button type="button" class="btn btn-form btn-default">导出</button>
+          </ImagePreview>
+          <img v-bind:src="file_image_src" style="width: 100%;"/>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-form btn-default">关闭</button>
+          <button class="btn btn-form btn-default">导出</button>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!--重命名-->
-  <div class="pane-sm sidebar padded-more" v-bind:style="{ display: mode === 'rename' ? 'block' : 'none' }">
-    <div>
-      <div class="form-group">
-        <label>现在的名称：{{file_name}}</label>
-        <input v-model="file_name_rename" class="form-control" placeholder="输入新名称">
-      </div>
-      <div class="form-actions">
-        <button class="btn btn-form btn-default">关闭</button>
-        <button class="btn btn-form btn-primary">重命名</button>
+    <!--音频-->
+    <div class="pane sidebar padded-more" v-bind:style="{ display: mode === 'audio' ? 'block' : 'none' }">
+      <div>
+        <div class="form-group">
+          <label>{{file_name}}</label>
+        </div>
+        <div class="form-group">
+          <audio v-bind:src="file_audio_src" controls="controls"></audio>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-form btn-default">关闭</button>
+          <button type="button" class="btn btn-form btn-default">导出</button>
+        </div>
       </div>
     </div>
-  </div>
+
+    <!--重命名-->
+    <div class="pane-sm sidebar padded-more" v-bind:style="{ display: mode === 'rename' ? 'block' : 'none' }">
+      <div>
+        <div class="form-group">
+          <label>现在的名称：{{file_name}}</label>
+          <input v-model="file_name_rename" class="form-control" placeholder="输入新名称">
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-form btn-default">关闭</button>
+          <button class="btn btn-form btn-primary">重命名</button>
+        </div>
+      </div>
+    </div>
 </template>
 
 
@@ -92,6 +95,9 @@
   import Device from './core/device'
   import VFS from './core/vfs_old'
   import FILE_TYPE from './core/const/file_type'
+  import ImagePreview from './ImagePreview'
+  import TextPreview from './TextPreview'
+  import AudioPreview from './ImagePreview'
 
   class FilePreview {
     preview() {
@@ -99,16 +105,21 @@
   }
 
   class TextPre extends FilePreview {
+    text = '';
     preview() {
     }
   }
 
   class ImagePre extends FilePreview {
+    image_src = '';
+
     preview() {
+
     }
   }
 
   class AudioPre extends FilePreview {
+    audio_src = '';
     preview() {
     }
   }
@@ -122,13 +133,14 @@
     get_preview(file_type) {
       switch (file_type) {
         case 'text':
-          return new TextPre()
+          var text_pre = new TextPre();
+          return text_pre;
         case 'image':
-          return new ImagePre()
+          return new ImagePre();
         case 'audio':
-          return new AudioPre()
+          return new AudioPre();
         default:
-          return new RegFilePre()
+          return new RegFilePre();
       }
     }
   }
@@ -149,7 +161,12 @@
 //        var factory = new FilePreviewFactory();
         console.log(this.props);
       }
-    }
+    },
+    components: [
+      TextPreview,
+      ImagePreview,
+      AudioPreview
+    ]
   }
 
 

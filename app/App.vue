@@ -27,7 +27,7 @@
     </header>
     <div class="window-content">
       <div class="pane-group">
-        <div class="pane-sm sidebar padded-more" v-bind:style="{ display: mode === 'create' ? 'block' : 'none' }">
+        <div class="pane-sm sidebar padded-more">
           <div>
             <div class="form-group">
               <div>
@@ -121,7 +121,7 @@
 
 
         <!--将一下替换为-->
-        <preview>
+        <preview v-bind:msg.sync="{'mode': mode, 'free_size': free_size, 'file_inode': file_inode}">
 
         </preview>
         <!--文件-->
@@ -218,11 +218,12 @@
   import FSFactory from './core/fs/factory'
   import FSCommand from './core/fs/command'
 
+  import Preview from './Preview'
+
   var fs_name = 'my-fs'
   var device = null
   var vfs_old = null
   var userData = app.getPath('userData')
-
   export default {
     ready () {
       try {
@@ -236,7 +237,7 @@
       }
       this.mount()
     },
-    data () {
+    data: function () {
       return {
         inode_index: 0,
         items: [],
@@ -476,6 +477,9 @@
       is_up_dir (item) {
         return item.file_type === FILE_TYPE.EXT2_FT_DIR && item.name === '..'
       }
+    },
+    components: {
+      Preview
     }
   }
 </script>
