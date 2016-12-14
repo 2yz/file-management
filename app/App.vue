@@ -79,9 +79,7 @@
 
 
         <!--将一下替换为-->
-        <preview v-bind:msg.sync="{'mode': mode, 'free_size': free_size, 'file_inode': file_inode}">
-
-        </preview>
+        <!--<preview v-bind:msg.sync="{'mode': mode, 'free_size': free_size, 'file_inode': file_inode}"></preview>-->
         <!--文件-->
         <div class="pane-sm sidebar padded-more" v-bind:style="{ display: mode === 'file' ? 'block' : 'none' }">
           <div>
@@ -191,7 +189,7 @@
   export default {
     ready () {
       VDevice.initial('native')
-      this.readDir('/Users')
+      this.cd('/')
 
       /*
        try {
@@ -238,18 +236,12 @@
     },
 
     methods: {
-      readDir (pathStr) {
-        VDevice.getCommandManager().execute({
-          method: 'readDir',
-          args: [
-            pathStr,
-            (err, files) => {
-              if (err) return
-              this.files = files.map(file => path.join(pathStr, file))
-              this.currentPath = pathStr
-              this.pathArr.push(pathStr)
-            }
-          ]
+      cd (pathStr) {
+        VDevice.getCommandManager().cd(pathStr, (err, files) => {
+          if (err) return
+          this.files = files.map(file => path.join(pathStr, file))
+          this.currentPath = pathStr
+          this.pathArr.push(pathStr)
         })
       },
 
@@ -291,13 +283,11 @@
         this.file_name = path.basename(file)
         VDevice.getCommandManager().execute({
           method: 'readFile',
-          args: [
-            file,
-            (err, data) => {
-              if (err) return
-              this.file_text = data.toString()
-            }
-          ]
+          args: [file],
+          callback: (err, data) => {
+            if (err) return
+            this.file_text = data.toString()
+          }
         })
 //        this.file_text = vfs_old.read_file(item.inode).toString()
         this.mode = 'text'
@@ -310,15 +300,13 @@
         this.mode = 'image'
         VDevice.getCommandManager().execute({
           method: 'readFile',
-          args: [
-            file,
-            (err, data) => {
-              if (err) return
-              var arr = ['data:' + mime.lookup(file) + ';base64,']
-              arr.push(data.toString('base64'))
-              this.file_image_src = arr.join('')
-            }
-          ]
+          args: [file],
+          callback: (err, data) => {
+            if (err) return
+            var arr = ['data:' + mime.lookup(file) + ';base64,']
+            arr.push(data.toString('base64'))
+            this.file_image_src = arr.join('')
+          }
         })
 //        var arr = ['data:' + item.mime_type + ';base64,']
 //        arr.push(vfs_old.read_file(item.inode).toString('base64'))
@@ -332,15 +320,13 @@
         this.mode = 'audio'
         VDevice.getCommandManager().execute({
           method: 'readFile',
-          args: [
-            file,
-            (err, data) => {
-              if (err) return
-              var arr = ['data:' + mime.lookup(file) + ';base64,']
-              arr.push(data.toString('base64'))
-              this.file_audio_src = arr.join('')
-            }
-          ]
+          args: [file],
+          callback: (err, data) => {
+            if (err) return
+            var arr = ['data:' + mime.lookup(file) + ';base64,']
+            arr.push(data.toString('base64'))
+            this.file_audio_src = arr.join('')
+          }
         })
 //        var arr = ['data:' + item.mime_type + ';base64,']
 //        arr.push(vfs_old.read_file(item.inode).toString('base64'))
@@ -657,7 +643,7 @@
         if (msg.isFile) {
           this.openFile(msg.file)
         } else if (msg.isDirectory) {
-          this.readDir(msg.file)
+          this.cd(msg.file)
         }
       },
       renameMsg (msg) {
