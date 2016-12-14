@@ -693,7 +693,7 @@
       }
     },
 
-    components: {å
+    components: {
       ItemComponent
       // Preview
     }
