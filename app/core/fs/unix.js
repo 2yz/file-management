@@ -46,6 +46,10 @@ export default class FSUnix extends FSInterface {
   rename(oldPath, newPath, callback) {
     fs.rename(oldPath, newPath, callback)
   }
+  
+  renameUndo(oldPath, newPath, callback) {
+    fs.rename(newPath, oldPath, callback)
+  }
 
   remove(file, callback) {
     fs.stat(file, (err, stats) => {
